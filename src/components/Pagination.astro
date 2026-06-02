@@ -1,0 +1,67 @@
+---
+interface Props {
+  basePath: string;
+  currentPage: number;
+  totalPages: number;
+}
+
+const { basePath, currentPage, totalPages } = Astro.props;
+
+if (totalPages <= 1) return;
+
+function pageHref(page: number) {
+  return page === 1 ? basePath : `${basePath}/${page}`;
+}
+
+const pages: (number | 'ellipsis')[] = [];
+if (totalPages <= 7) {
+  for (let i = 1; i <= totalPages; i++) pages.push(i);
+} else {
+  pages.push(1);
+  if (currentPage > 3) pages.push('ellipsis');
+  for (let i = Math.max(2, currentPage - 1); i <= Math.min(totalPages - 1, currentPage + 1); i++) {
+    pages.push(i);
+  }
+  if (currentPage < totalPages - 2) pages.push('ellipsis');
+  pages.push(totalPages);
+}
+---
+
+<nav class="mt-10 flex items-center justify-center gap-1" aria-label="Paginação">
+  {currentPage > 1 && (
+    <a
+      href={pageHref(currentPage - 1)}
+      class="rounded-lg border border-stone-200 px-3 py-2 text-sm font-medium text-stone-700 hover:bg-stone-50"
+    >
+      Anterior
+    </a>
+  )}
+
+  {pages.map((p) =>
+    p === 'ellipsis' ? (
+      <span class="px-2 text-stone-400">…</span>
+    ) : (
+      <a
+        href={pageHref(p)}
+        class:list={[
+          'rounded-lg px-3 py-2 text-sm font-medium transition',
+          p === currentPage
+            ? 'bg-brand-600 text-white'
+            : 'border border-stone-200 text-stone-700 hover:bg-stone-50',
+        ]}
+        aria-current={p === currentPage ? 'page' : undefined}
+      >
+        {p}
+      </a>
+    )
+  )}
+
+  {currentPage < totalPages && (
+    <a
+      href={pageHref(currentPage + 1)}
+      class="rounded-lg border border-stone-200 px-3 py-2 text-sm font-medium text-stone-700 hover:bg-stone-50"
+    >
+      Próxima
+    </a>
+  )}
+</nav>

@@ -1,0 +1,46 @@
+---
+const year = new Date().getFullYear();
+---
+
+<footer class="border-t border-stone-200 bg-white">
+  <div class="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
+    <div class="grid gap-10 md:grid-cols-4">
+      <div class="md:col-span-2">
+        <div class="flex items-center gap-2.5">
+          <span class="flex h-9 w-9 items-center justify-center rounded-lg bg-brand-600 text-white">
+            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+            </svg>
+          </span>
+          <span class="font-display text-lg font-semibold text-brand-900">Guia Morada</span>
+        </div>
+        <p class="mt-4 max-w-md text-sm leading-relaxed text-muted">
+          O diretório mais completo de imobiliárias e corretores do Brasil. Encontre profissionais verificados perto de você ou cadastre seu negócio gratuitamente.
+        </p>
+      </div>
+
+      <div>
+        <h3 class="text-sm font-semibold uppercase tracking-wider text-stone-900">Explorar</h3>
+        <ul class="mt-4 space-y-2.5 text-sm text-muted">
+          <li><a href="/imobiliarias" class="hover:text-brand-700 transition">Imobiliárias</a></li>
+          <li><a href="/corretores" class="hover:text-brand-700 transition">Corretores</a></li>
+          <li><a href="/cadastro" class="hover:text-brand-700 transition">Cadastre-se</a></li>
+          <li><a href="/sobre" class="hover:text-brand-700 transition">Sobre nós</a></li>
+        </ul>
+      </div>
+
+      <div>
+        <h3 class="text-sm font-semibold uppercase tracking-wider text-stone-900">Contato</h3>
+        <ul class="mt-4 space-y-2.5 text-sm text-muted">
+          <li>contato@guiamorada.com.br</li>
+          <li>São Paulo, Brasil</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="mt-10 flex flex-col items-center justify-between gap-4 border-t border-stone-100 pt-8 sm:flex-row">
+      <p class="text-sm text-muted">&copy; {year} Guia Morada. Todos os direitos reservados.</p>
+      <p class="text-xs text-stone-400">CRECI verificado · Dados ilustrativos para demonstração</p>
+    </div>
+  </div>
+</footer>

@@ -1,0 +1,37 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import ImobiliariasCidadeContent from '../../components/ImobiliariasCidadeContent.astro';
+import { loadCidadesIndex, loadCidadeData } from '../../lib/load-cidade';
+import { getPrepositionLabel } from '../../lib/cidades';
+
+export function getStaticPaths() {
+  const index = loadCidadesIndex();
+  const paths = [];
+
+  for (const city of index) {
+    for (let page = 2; page <= city.totalPages; page++) {
+      paths.push({
+        params: { cityListing: city.slug, page: String(page) },
+        props: { slug: city.slug, page },
+      });
+    }
+  }
+
+  return paths;
+}
+
+interface Props {
+  slug: string;
+  page: number;
+}
+
+const { slug, page } = Astro.props;
+const data = loadCidadeData(slug);
+const prepLabel = getPrepositionLabel(data.prep, data.cidade);
+const title = `Imobiliárias ${prepLabel} — Página ${page}`;
+const description = `Página ${page} de ${data.totalPages} — ${data.total.toLocaleString('pt-BR')} imobiliárias ${prepLabel} (${data.estado}).`;
+---
+
+<Layout title={title} description={description}>
+  <ImobiliariasCidadeContent data={data} page={page} />
+</Layout>

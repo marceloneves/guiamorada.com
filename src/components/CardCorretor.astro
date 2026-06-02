@@ -1,0 +1,66 @@
+---
+import type { Corretor } from '../types/directory';
+import { especialidadeLabels } from '../types/directory';
+import StarRating from './StarRating.astro';
+import Badge from './Badge.astro';
+
+interface Props {
+  corretor: Corretor;
+}
+
+const { corretor } = Astro.props;
+---
+
+<article class="group card-hover overflow-hidden rounded-2xl border border-stone-200 bg-white shadow-sm">
+  <a href={`/corretores/${corretor.slug}`} class="block p-5">
+    <div class="flex items-start gap-4">
+      <div class="relative shrink-0">
+        <img
+          src={corretor.foto}
+          alt={corretor.nome}
+          class="h-16 w-16 rounded-2xl border-2 border-white bg-brand-50 object-cover shadow-md"
+          loading="lazy"
+        />
+        {corretor.destaque && (
+          <span class="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-amber-400 text-[10px] font-bold text-amber-950">
+            ★
+          </span>
+        )}
+      </div>
+
+      <div class="min-w-0 flex-1">
+        <div class="flex flex-wrap items-center gap-2">
+          <h3 class="font-semibold text-stone-900 group-hover:text-brand-700 transition">{corretor.nome}</h3>
+          {corretor.verificado && <Badge label="Verificado" variant="verified" />}
+        </div>
+
+        {corretor.imobiliariaNome ? (
+          <p class="mt-0.5 text-sm text-brand-700">{corretor.imobiliariaNome}</p>
+        ) : (
+          <p class="mt-0.5 text-sm text-muted">Corretor autônomo</p>
+        )}
+
+        <p class="mt-1 text-sm text-muted">
+          {corretor.endereco.bairro}, {corretor.endereco.cidade} — {corretor.endereco.estado}
+        </p>
+      </div>
+    </div>
+
+    <p class="mt-4 line-clamp-2 text-sm leading-relaxed text-stone-600">{corretor.bio}</p>
+
+    <div class="mt-4 flex flex-wrap gap-1.5">
+      {corretor.especialidades.slice(0, 3).map((esp) => (
+        <Badge label={especialidadeLabels[esp]} variant="brand" />
+      ))}
+    </div>
+
+    <div class="mt-4 flex items-center justify-between border-t border-stone-100 pt-4">
+      <div class="flex items-center gap-2">
+        <StarRating rating={corretor.avaliacao} />
+        <span class="text-sm font-medium text-stone-700">{corretor.avaliacao.toFixed(1)}</span>
+        <span class="text-sm text-muted">({corretor.totalAvaliacoes})</span>
+      </div>
+      <span class="text-xs text-muted">CRECI {corretor.creci}</span>
+    </div>
+  </a>
+</article>

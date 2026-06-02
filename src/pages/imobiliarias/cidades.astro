@@ -1,0 +1,82 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import { loadCidadesIndex } from '../../lib/load-cidade';
+import { getPrepositionLabel } from '../../lib/cidades';
+
+const cidades = loadCidadesIndex();
+const q = Astro.url.searchParams.get('q')?.toLowerCase() ?? '';
+const uf = Astro.url.searchParams.get('uf')?.toUpperCase() ?? '';
+
+const filtered = cidades.filter((c) => {
+  const matchQ = !q || c.cidade.toLowerCase().includes(q) || c.slug.includes(q);
+  const matchUf = !uf || c.estado === uf;
+  return matchQ && matchUf;
+});
+
+const estados = [...new Set(cidades.map((c) => c.estado))].sort();
+---
+
+<Layout
+  title="Imobiliárias por cidade"
+  description="Navegue por imobiliárias em mais de 2.600 cidades brasileiras. Encontre empresas do setor imobiliário perto de você."
+>
+  <div class="border-b border-stone-200 bg-white">
+    <div class="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
+      <h1 class="font-display text-3xl font-bold text-stone-900 sm:text-4xl">Imobiliárias por cidade</h1>
+      <p class="mt-2 text-muted">
+        {cidades.length.toLocaleString('pt-BR')} cidades · {cidades.reduce((s, c) => s + c.total, 0).toLocaleString('pt-BR')} imobiliárias
+      </p>
+
+      <form method="get" class="mt-6 flex flex-col gap-3 sm:flex-row sm:items-end">
+        <div class="flex-1">
+          <label for="q" class="mb-1.5 block text-xs font-medium uppercase tracking-wide text-stone-500">Buscar cidade</label>
+          <input
+            type="search"
+            id="q"
+            name="q"
+            value={q}
+            placeholder="Ex: São Paulo, Curitiba..."
+            class="w-full rounded-xl border border-stone-200 px-4 py-2.5 text-sm focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20"
+          />
+        </div>
+        <div class="sm:w-32">
+          <label for="uf" class="mb-1.5 block text-xs font-medium uppercase tracking-wide text-stone-500">Estado</label>
+          <select id="uf" name="uf" class="w-full rounded-xl border border-stone-200 px-4 py-2.5 text-sm">
+            <option value="">Todos</option>
+            {estados.map((e) => (
+              <option value={e} selected={uf === e}>{e}</option>
+            ))}
+          </select>
+        </div>
+        <button type="submit" class="rounded-xl bg-brand-600 px-6 py-2.5 text-sm font-semibold text-white hover:bg-brand-700">
+          Filtrar
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <div class="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
+    <div class="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+      {filtered.map((city) => (
+        <a
+          href={`/${city.slug}`}
+          class="group flex items-center justify-between rounded-xl border border-stone-200 bg-white px-4 py-3.5 transition hover:border-brand-300 hover:shadow-md"
+        >
+          <div>
+            <span class="font-medium text-stone-900 group-hover:text-brand-700">
+              Imobiliárias {getPrepositionLabel(city.prep, city.cidade)}
+            </span>
+            <span class="mt-0.5 block text-sm text-muted">{city.estado}</span>
+          </div>
+          <span class="rounded-full bg-brand-50 px-2.5 py-1 text-xs font-semibold text-brand-800">
+            {city.total.toLocaleString('pt-BR')}
+          </span>
+        </a>
+      ))}
+    </div>
+
+    {filtered.length === 0 && (
+      <p class="py-16 text-center text-muted">Nenhuma cidade encontrada com os filtros selecionados.</p>
+    )}
+  </div>
+</Layout>

@@ -1,0 +1,29 @@
+---
+import Layout from '../layouts/Layout.astro';
+import ImobiliariasCidadeContent from '../components/ImobiliariasCidadeContent.astro';
+import { loadCidadesIndex, loadCidadeData } from '../lib/load-cidade';
+import { getPrepositionLabel } from '../lib/cidades';
+
+export function getStaticPaths() {
+  const index = loadCidadesIndex();
+  return index.map((city) => ({
+    params: { cityListing: city.slug },
+    props: { slug: city.slug, page: 1 },
+  }));
+}
+
+interface Props {
+  slug: string;
+  page: number;
+}
+
+const { slug, page } = Astro.props;
+const data = loadCidadeData(slug);
+const prepLabel = getPrepositionLabel(data.prep, data.cidade);
+const title = `Imobiliárias ${prepLabel}`;
+const description = `Lista de ${data.total.toLocaleString('pt-BR')} imobiliárias ${prepLabel} (${data.estado}). Encontre telefone e endereço no Guia Morada.`;
+---
+
+<Layout title={title} description={description}>
+  <ImobiliariasCidadeContent data={data} page={page} />
+</Layout>

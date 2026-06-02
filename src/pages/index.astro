@@ -1,0 +1,93 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Hero from '../components/Hero.astro';
+import StatsBar from '../components/StatsBar.astro';
+import SectionHeading from '../components/SectionHeading.astro';
+import CardCorretor from '../components/CardCorretor.astro';
+import { loadCidadesIndex } from '../lib/load-cidade';
+import { getPrepositionLabel } from '../lib/cidades';
+import { corretores } from '../data/corretores';
+
+const cidadesIndex = loadCidadesIndex();
+const totalImobiliarias = cidadesIndex.reduce((s, c) => s + c.total, 0);
+const topCidades = cidadesIndex.slice(0, 6);
+const destaquesCorret = corretores.filter((c) => c.destaque).slice(0, 4);
+---
+
+<Layout>
+  <Hero topCidades={cidadesIndex.slice(0, 4)} totalImobiliarias={totalImobiliarias} />
+  <StatsBar />
+
+  <!-- Principais cidades -->
+  <section class="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
+    <SectionHeading
+      title="Imobiliárias por cidade"
+      subtitle="Navegue pelo diretório completo de imobiliárias em todo o Brasil."
+      action={{ href: '/imobiliarias/cidades', label: 'Ver todas as cidades' }}
+    />
+    <div class="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      {topCidades.map((city) => (
+        <a
+          href={`/${city.slug}`}
+          class="group flex items-center justify-between rounded-2xl border border-stone-200 bg-white p-5 transition hover:border-brand-300 hover:shadow-lg hover:shadow-brand-900/5"
+        >
+          <div>
+            <h3 class="font-semibold text-stone-900 group-hover:text-brand-700">
+              Imobiliárias {getPrepositionLabel(city.prep, city.cidade)}
+            </h3>
+            <p class="mt-1 text-sm text-muted">{city.estado}</p>
+          </div>
+          <span class="rounded-full bg-brand-50 px-3 py-1 text-sm font-semibold text-brand-800">
+            {city.total.toLocaleString('pt-BR')}
+          </span>
+        </a>
+      ))}
+    </div>
+  </section>
+
+  <!-- Corretores em destaque -->
+  <section class="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
+    <SectionHeading
+      title="Corretores recomendados"
+      subtitle="Profissionais com as melhores avaliações dos clientes."
+      action={{ href: '/corretores', label: 'Ver todos' }}
+    />
+    <div class="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+      {destaquesCorret.map((corretor) => (
+        <CardCorretor corretor={corretor} />
+      ))}
+    </div>
+  </section>
+
+  <!-- CTA Cadastro -->
+  <section class="mx-auto max-w-7xl px-4 pb-20 sm:px-6 lg:px-8">
+    <div class="relative overflow-hidden rounded-3xl bg-brand-800 px-6 py-14 text-center sm:px-12">
+      <div class="absolute inset-0 opacity-20">
+        <div class="absolute -right-10 -top-10 h-64 w-64 rounded-full bg-brand-400 blur-3xl"></div>
+        <div class="absolute -bottom-10 -left-10 h-64 w-64 rounded-full bg-teal-400 blur-3xl"></div>
+      </div>
+      <div class="relative">
+        <h2 class="font-display text-3xl font-bold text-white sm:text-4xl">
+          Faça parte do Guia Morada
+        </h2>
+        <p class="mx-auto mt-4 max-w-xl text-brand-100">
+          Cadastre sua imobiliária ou perfil de corretor gratuitamente e alcance milhares de clientes em busca do imóvel ideal.
+        </p>
+        <div class="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
+          <a
+            href="/cadastro?tipo=imobiliaria"
+            class="inline-flex w-full items-center justify-center rounded-xl bg-white px-6 py-3 text-sm font-semibold text-brand-800 transition hover:bg-brand-50 sm:w-auto"
+          >
+            Cadastrar imobiliária
+          </a>
+          <a
+            href="/cadastro?tipo=corretor"
+            class="inline-flex w-full items-center justify-center rounded-xl border border-white/30 px-6 py-3 text-sm font-semibold text-white transition hover:bg-white/10 sm:w-auto"
+          >
+            Cadastrar como corretor
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+</Layout>
