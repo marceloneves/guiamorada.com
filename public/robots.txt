@@ -1,0 +1,29 @@
+# Guia Morada — robots.txt
+# https://guiamorada.com
+
+User-agent: *
+Allow: /
+
+User-agent: GPTBot
+Allow: /
+
+User-agent: ChatGPT-User
+Allow: /
+
+User-agent: Google-Extended
+Allow: /
+
+User-agent: anthropic-ai
+Allow: /
+
+User-agent: ClaudeBot
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+# Informações para modelos de linguagem
+# https://llmstxt.org/
+# Ver: https://guiamorada.com/llms.txt
+
+Sitemap: https://guiamorada.com/sitemap-index.xml

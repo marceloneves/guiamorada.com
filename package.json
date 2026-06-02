@@ -7,12 +7,14 @@
   },
   "scripts": {
     "dev": "astro dev",
-    "build": "astro build",
+    "build": "node scripts/generate-llms.mjs && astro build",
     "preview": "astro preview",
     "astro": "astro",
-    "import:imobiliarias": "node scripts/import-imobiliarias.mjs"
+    "import:imobiliarias": "node scripts/import-imobiliarias.mjs",
+    "generate:llms": "node scripts/generate-llms.mjs"
   },
   "dependencies": {
+    "@astrojs/sitemap": "^3.7.3",
     "@tailwindcss/vite": "^4.3.0",
     "astro": "^6.4.2",
     "tailwindcss": "^4.3.0"

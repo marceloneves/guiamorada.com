@@ -1,0 +1,59 @@
+# Guia Morada
+
+> Diretório de imobiliárias e corretores no Brasil.
+
+O Guia Morada lista imobiliárias com telefone, endereço e área de atuação, organizadas por cidade. Não exibimos CNPJ nem e-mail por privacidade.
+
+Total: 46.315 imobiliárias em 2.462 cidades.
+
+## Páginas principais
+
+- [Página inicial](https://guiamorada.com/)
+- [Imobiliárias por cidade](https://guiamorada.com/imobiliarias/cidades)
+- [Imobiliárias](https://guiamorada.com/imobiliarias)
+- [Corretores](https://guiamorada.com/corretores)
+- [Cadastre-se](https://guiamorada.com/cadastro)
+- [Sobre](https://guiamorada.com/sobre)
+
+## Principais cidades
+
+- [Imobiliárias em São Paulo (5.937)](https://guiamorada.com/imobiliarias-em-sao-paulo)
+- [Imobiliárias em Curitiba (1.515)](https://guiamorada.com/imobiliarias-em-curitiba)
+- [Imobiliárias em Belo Horizonte (1.488)](https://guiamorada.com/imobiliarias-em-belo-horizonte)
+- [Imobiliárias no Rio de Janeiro (1.343)](https://guiamorada.com/imobiliarias-no-rio-de-janeiro)
+- [Imobiliárias em Brasília (1.217)](https://guiamorada.com/imobiliarias-em-brasilia)
+- [Imobiliárias em Porto Alegre (1.009)](https://guiamorada.com/imobiliarias-em-porto-alegre)
+- [Imobiliárias em Fortaleza (802)](https://guiamorada.com/imobiliarias-em-fortaleza)
+- [Imobiliárias em Goiania (749)](https://guiamorada.com/imobiliarias-em-goiania)
+- [Imobiliárias em Salvador (610)](https://guiamorada.com/imobiliarias-em-salvador)
+- [Imobiliárias em Campinas (603)](https://guiamorada.com/imobiliarias-em-campinas)
+- [Imobiliárias em Natal (568)](https://guiamorada.com/imobiliarias-em-natal)
+- [Imobiliárias em Recife (504)](https://guiamorada.com/imobiliarias-em-recife)
+- [Imobiliárias em Florianopolis (501)](https://guiamorada.com/imobiliarias-em-florianopolis)
+- [Imobiliárias em Joao Pessoa (455)](https://guiamorada.com/imobiliarias-em-joao-pessoa)
+- [Imobiliárias em Manaus (454)](https://guiamorada.com/imobiliarias-em-manaus)
+- [Imobiliárias em Ribeirão Preto (391)](https://guiamorada.com/imobiliarias-em-ribeirao-preto)
+- [Imobiliárias em Campo Grande (362)](https://guiamorada.com/imobiliarias-em-campo-grande-ms)
+- [Imobiliárias em Sao Luis (361)](https://guiamorada.com/imobiliarias-em-sao-luis)
+- [Imobiliárias em Cuiaba (352)](https://guiamorada.com/imobiliarias-em-cuiaba)
+- [Imobiliárias em Vitoria (332)](https://guiamorada.com/imobiliarias-em-vitoria)
+- [Imobiliárias em Sorocaba (303)](https://guiamorada.com/imobiliarias-em-sorocaba)
+- [Imobiliárias em Londrina (286)](https://guiamorada.com/imobiliarias-em-londrina)
+- [Imobiliárias em Joinville (284)](https://guiamorada.com/imobiliarias-em-joinville)
+- [Imobiliárias em São José dos Campos (279)](https://guiamorada.com/imobiliarias-em-sao-jose-dos-campos)
+- [Imobiliárias em Blumenau (276)](https://guiamorada.com/imobiliarias-em-blumenau)
+
+## Formato das URLs por cidade
+
+- Página 1: `/imobiliarias-em-{cidade}` ou `/imobiliarias-no-{cidade}`
+- Paginação: `/imobiliarias-em-{cidade}/2` (20 imobiliárias por página)
+- Cidades homônimas incluem UF no slug: `/imobiliarias-em-cascavel-pr`
+
+## Contato
+
+- Site: https://guiamorada.com
+- E-mail: contato@guiamorada.com.br
+
+## Sitemap
+
+- [sitemap-index.xml](https://guiamorada.com/sitemap-index.xml)
