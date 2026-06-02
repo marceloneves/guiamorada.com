@@ -1,15 +1,12 @@
+/** Gerado por scripts/generate-sitemap.mjs — não editar manualmente */
 import type { APIRoute } from 'astro';
 import fs from 'node:fs';
 import path from 'node:path';
 
 export const prerender = true;
 
-function readPublicFile(name: string): string {
-  return fs.readFileSync(path.join(process.cwd(), 'public', name), 'utf-8');
-}
-
 export const GET: APIRoute = () =>
-  new Response(readPublicFile('sitemap-index.xml'), {
+  new Response(fs.readFileSync(path.join(process.cwd(), 'public', 'sitemap-3.xml'), 'utf-8'), {
     headers: {
       'Content-Type': 'application/xml; charset=utf-8',
       'Cache-Control': 'public, max-age=3600, s-maxage=86400',

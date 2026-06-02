@@ -1,5 +1,5 @@
 /**
- * Gera sitemaps em public/ para versionamento e deploy.
+ * Gera sitemaps em public/ e rotas Astro para servir na Vercel.
  * Uso: node scripts/generate-sitemap.mjs
  */
 
@@ -12,7 +12,9 @@ const ROOT = path.join(__dirname, '..');
 const SITE = 'https://guiamorada.com';
 const INDEX_FILE = path.join(ROOT, 'src/data/generated/cidades-index.json');
 const PUBLIC_DIR = path.join(ROOT, 'public');
-const URLS_PER_SITEMAP = 5000;
+const PAGES_DIR = path.join(ROOT, 'src/pages');
+/** Máximo recomendado para fetch confiável pelo Google Search Console */
+const URLS_PER_SITEMAP = 1000;
 
 function escapeXml(value) {
   return String(value)
@@ -39,7 +41,6 @@ function collectUrls() {
 
   const add = (pathname) => urls.add(JSON.stringify({ loc: toUrl(pathname), lastmod }));
 
-  // Páginas fixas
   [
     '/',
     '/cadastro',
@@ -49,7 +50,6 @@ function collectUrls() {
     '/sobre',
   ].forEach(add);
 
-  // Corretores e imobiliárias demo
   extractSlugs(path.join(ROOT, 'src/data/corretores.ts')).forEach((slug) =>
     add(`/corretores/${slug}`),
   );
@@ -57,7 +57,6 @@ function collectUrls() {
     add(`/imobiliarias/${slug}`),
   );
 
-  // Cidades importadas
   if (fs.existsSync(INDEX_FILE)) {
     const cidades = JSON.parse(fs.readFileSync(INDEX_FILE, 'utf-8'));
     for (const city of cidades) {
@@ -94,7 +93,43 @@ function buildSitemapIndex(files) {
   return `<?xml version="1.0" encoding="UTF-8"?>\n<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${body}\n</sitemapindex>\n`;
 }
 
+function buildSitemapRoute(filename) {
+  return `/** Gerado por scripts/generate-sitemap.mjs — não editar manualmente */
+import type { APIRoute } from 'astro';
+import fs from 'node:fs';
+import path from 'node:path';
+
+export const prerender = true;
+
+export const GET: APIRoute = () =>
+  new Response(fs.readFileSync(path.join(process.cwd(), 'public', '${filename}'), 'utf-8'), {
+    headers: {
+      'Content-Type': 'application/xml; charset=utf-8',
+      'Cache-Control': 'public, max-age=3600, s-maxage=86400',
+    },
+  });
+`;
+}
+
+function cleanOldSitemapRoutes() {
+  if (!fs.existsSync(PAGES_DIR)) return;
+
+  for (const file of fs.readdirSync(PAGES_DIR)) {
+    if (/^sitemap-\d+\.xml\.ts$/.test(file)) {
+      fs.unlinkSync(path.join(PAGES_DIR, file));
+    }
+  }
+
+  for (const file of fs.readdirSync(PUBLIC_DIR)) {
+    if (/^sitemap-\d+\.xml$/.test(file)) {
+      fs.unlinkSync(path.join(PUBLIC_DIR, file));
+    }
+  }
+}
+
 function main() {
+  cleanOldSitemapRoutes();
+
   const urls = collectUrls();
   const chunks = [];
 
@@ -111,13 +146,17 @@ function main() {
   chunks.forEach((chunk, index) => {
     const filename = `sitemap-${index}.xml`;
     fs.writeFileSync(path.join(PUBLIC_DIR, filename), buildUrlset(chunk));
+    fs.writeFileSync(path.join(PAGES_DIR, `${filename}.ts`), buildSitemapRoute(filename));
     sitemapFiles.push(filename);
   });
 
   fs.writeFileSync(path.join(PUBLIC_DIR, 'sitemap-index.xml'), buildSitemapIndex(sitemapFiles));
 
-  console.log(`✓ ${urls.length} URLs em ${sitemapFiles.length} sitemap(s)`);
-  sitemapFiles.forEach((file) => console.log(`  → public/${file}`));
+  console.log(`✓ ${urls.length} URLs em ${sitemapFiles.length} sitemap(s) (${URLS_PER_SITEMAP} URLs/arquivo)`);
+  sitemapFiles.forEach((file) => {
+    console.log(`  → public/${file}`);
+    console.log(`  → src/pages/${file}.ts`);
+  });
   console.log('  → public/sitemap-index.xml');
 }
 
