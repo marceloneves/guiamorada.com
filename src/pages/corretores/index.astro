@@ -3,6 +3,7 @@ import Layout from '../../layouts/Layout.astro';
 import CardCorretor from '../../components/CardCorretor.astro';
 import { corretores, getCidadesCorretores } from '../../data/corretores';
 import { especialidadeLabels, type Especialidade } from '../../types/directory';
+import { webPageSchema, breadcrumbSchema, itemListSchema } from '../../lib/schema';
 
 const q = Astro.url.searchParams.get('q')?.toLowerCase() ?? '';
 const cidade = Astro.url.searchParams.get('cidade') ?? '';
@@ -21,12 +22,24 @@ const filtered = corretores.filter((c) => {
 
 const cidades = getCidadesCorretores();
 const especialidades = Object.entries(especialidadeLabels) as [Especialidade, string][];
+
+const title = 'Corretores';
+const description = 'Encontre corretores de imóveis verificados em todo o Brasil no Guia Morada.';
+
+const schema = [
+  webPageSchema({ type: 'CollectionPage', path: '/corretores/', name: title, description }),
+  breadcrumbSchema([
+    { name: 'Início', path: '/' },
+    { name: 'Corretores', path: '/corretores/' },
+  ]),
+  itemListSchema(
+    filtered.map((c) => ({ name: c.nome, path: `/corretores/${c.slug}/` })),
+    'Corretores cadastrados',
+  ),
+];
 ---
 
-<Layout
-  title="Corretores"
-  description="Encontre corretores de imóveis verificados em todo o Brasil no Guia Morada."
->
+<Layout title={title} description={description} schema={schema}>
   <div class="border-b border-stone-200 bg-white">
     <div class="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
       <h1 class="font-display text-3xl font-bold text-stone-900 sm:text-4xl">Corretores</h1>
@@ -81,9 +94,9 @@ const especialidades = Object.entries(especialidadeLabels) as [Especialidade, st
     ) : (
       <div class="rounded-2xl border border-dashed border-stone-300 bg-stone-50 py-16 text-center">
         <p class="text-lg font-medium text-stone-700">Nenhum corretor encontrado</p>
-        <p class="mt-2 text-muted">Tente ajustar os filtros ou cadastre seu perfil.</p>
-        <a href="/cadastro?tipo=corretor" class="mt-6 inline-flex rounded-xl bg-brand-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-brand-700">
-          Cadastrar como corretor
+        <p class="mt-2 text-muted">Tente ajustar os filtros ou anuncie o seu perfil.</p>
+        <a href="/anuncie/" class="mt-6 inline-flex rounded-xl bg-brand-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-brand-700">
+          Anuncie aqui
         </a>
       </div>
     )}

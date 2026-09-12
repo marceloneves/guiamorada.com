@@ -1,8 +1,16 @@
 ---
 import type { CidadeData } from '../lib/cidades';
-import { getPrepositionLabel, paginateImobiliarias, IMOBILIARIAS_POR_PAGINA } from '../lib/cidades';
+import {
+  getPrepositionLabel,
+  getEstadoLabel,
+  getEstadoGenitivo,
+  getEstadoNome,
+  paginateImobiliarias,
+  IMOBILIARIAS_POR_PAGINA,
+} from '../lib/cidades';
 import CardImobiliariaCadastro from './CardImobiliariaCadastro.astro';
 import Pagination from './Pagination.astro';
+import CidadeConteudo from './CidadeConteudo.astro';
 
 interface Props {
   data: CidadeData;
@@ -12,6 +20,21 @@ interface Props {
 const { data, page } = Astro.props;
 const imobiliarias = paginateImobiliarias(data.imobiliarias, page, IMOBILIARIAS_POR_PAGINA);
 const prepLabel = getPrepositionLabel(data.prep, data.cidade);
+const estadoLabel = getEstadoLabel(data.estado);
+const estadoNome = getEstadoNome(data.estado);
+const estadoGenitivo = getEstadoGenitivo(data.estado);
+// Em capitais homônimas do estado ("São Paulo, em São Paulo") a UF entre parênteses lê melhor.
+const localLabel =
+  data.cidade === estadoNome ? `${prepLabel} (${data.estado})` : `${prepLabel}, ${estadoLabel}`;
+const ufAnchor = `/imobiliarias/cidades/#uf-${data.estado.toLowerCase()}`;
+
+const atualizadoEm = new Date();
+const atualizadoLabel = atualizadoEm.toLocaleDateString('pt-BR', {
+  day: 'numeric',
+  month: 'long',
+  year: 'numeric',
+});
+const atualizadoISO = atualizadoEm.toISOString().split('T')[0];
 ---
 
 <div class="border-b border-stone-200 bg-white">
@@ -19,7 +42,7 @@ const prepLabel = getPrepositionLabel(data.prep, data.cidade);
     <nav class="mb-4 text-sm text-muted">
       <a href="/" class="hover:text-brand-700">Início</a>
       <span class="mx-2">/</span>
-      <a href="/imobiliarias/cidades" class="hover:text-brand-700">Cidades</a>
+      <a href="/imobiliarias/cidades/" class="hover:text-brand-700">Cidades</a>
       <span class="mx-2">/</span>
       <span class="text-stone-700">{data.cidade}</span>
     </nav>
@@ -35,7 +58,21 @@ const prepLabel = getPrepositionLabel(data.prep, data.cidade);
 </div>
 
 <div class="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
-  <div class="grid gap-4">
+  <div class="rounded-2xl border border-stone-200 bg-white p-6 sm:p-8">
+    <p class="leading-relaxed text-stone-600">
+      Encontre imobiliárias {localLabel}. Esta página reúne {data.total.toLocaleString('pt-BR')}{' '}
+      {data.total === 1 ? 'empresa cadastrada' : 'empresas cadastradas'} na cidade, com endereço, telefone e área de
+      atuação, e também dá acesso <a href={ufAnchor} class="font-medium text-brand-700 hover:underline">às demais
+      cidades {estadoGenitivo}</a>, ao <a href="/corretores/" class="font-medium text-brand-700 hover:underline">diretório
+      de corretores</a> e aos <a href="/anuncie/" class="font-medium text-brand-700 hover:underline">planos para
+      anunciar</a> no Guia Morada.
+    </p>
+    <p class="mt-4 text-sm text-muted">
+      Atualizado em <time datetime={atualizadoISO}>{atualizadoLabel}</time>.
+    </p>
+  </div>
+
+  <div class="mt-8 grid gap-4">
     {imobiliarias.map((imob) => (
       <CardImobiliariaCadastro imobiliaria={imob} />
     ))}
@@ -46,4 +83,6 @@ const prepLabel = getPrepositionLabel(data.prep, data.cidade);
     currentPage={page}
     totalPages={data.totalPages}
   />
+
+  {page === 1 && <CidadeConteudo data={data} />}
 </div>

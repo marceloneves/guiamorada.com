@@ -2,7 +2,8 @@
 import Layout from '../../layouts/Layout.astro';
 import ImobiliariasCidadeContent from '../../components/ImobiliariasCidadeContent.astro';
 import { loadCidadesIndex, loadCidadeData } from '../../lib/load-cidade';
-import { getPrepositionLabel } from '../../lib/cidades';
+import { getPrepositionLabel, paginateImobiliarias, IMOBILIARIAS_POR_PAGINA } from '../../lib/cidades';
+import { cidadeListingSchema } from '../../lib/schema';
 
 export function getStaticPaths() {
   const index = loadCidadesIndex();
@@ -30,8 +31,14 @@ const data = loadCidadeData(slug);
 const prepLabel = getPrepositionLabel(data.prep, data.cidade);
 const title = `Imobiliárias ${prepLabel} — Página ${page}`;
 const description = `Página ${page} de ${data.totalPages} — ${data.total.toLocaleString('pt-BR')} imobiliárias ${prepLabel} (${data.estado}).`;
+
+const schema = cidadeListingSchema(
+  data,
+  page,
+  paginateImobiliarias(data.imobiliarias, page, IMOBILIARIAS_POR_PAGINA),
+);
 ---
 
-<Layout title={title} description={description}>
+<Layout title={title} description={description} schema={schema}>
   <ImobiliariasCidadeContent data={data} page={page} />
 </Layout>

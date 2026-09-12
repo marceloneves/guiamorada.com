@@ -43,7 +43,7 @@ function collectUrls() {
 
   [
     '/',
-    '/cadastro',
+    '/anuncie',
     '/corretores',
     '/imobiliarias',
     '/imobiliarias/cidades',

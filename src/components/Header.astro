@@ -1,9 +1,9 @@
 ---
 const navLinks = [
-  { href: '/imobiliarias/cidades', label: 'Imobiliárias' },
-  { href: '/corretores', label: 'Corretores' },
-  { href: '/cadastro', label: 'Cadastre-se' },
-  { href: '/sobre', label: 'Sobre' },
+  { href: '/', label: 'Início' },
+  { href: '/imobiliarias/cidades/', label: 'Imobiliárias' },
+  { href: '/corretores/', label: 'Corretores' },
+  { href: '/sobre/', label: 'Sobre' },
 ];
 
 const currentPath = Astro.url.pathname;
@@ -29,7 +29,7 @@ const currentPath = Astro.url.pathname;
           href={link.href}
           class:list={[
             'rounded-lg px-3.5 py-2 text-sm font-medium transition',
-            currentPath.startsWith(link.href)
+            (link.href === '/' ? currentPath === '/' : currentPath.startsWith(link.href))
               ? 'bg-brand-50 text-brand-800'
               : 'text-stone-600 hover:bg-stone-50 hover:text-brand-700',
           ]}
@@ -40,10 +40,10 @@ const currentPath = Astro.url.pathname;
     </nav>
 
     <a
-      href="/cadastro"
-      class="hidden rounded-xl bg-brand-600 px-4 py-2.5 text-sm font-semibold text-white shadow-md shadow-brand-600/20 transition hover:bg-brand-700 sm:inline-flex"
+      href="/anuncie/"
+      class="hidden rounded-xl bg-brand-600 px-4 py-2.5 text-sm font-semibold text-white shadow-md shadow-brand-600/30 transition hover:bg-brand-700 sm:inline-flex"
     >
-      Anunciar grátis
+      Anuncie Aqui
     </a>
 
     <details class="relative md:hidden">
@@ -61,6 +61,12 @@ const currentPath = Astro.url.pathname;
             {link.label}
           </a>
         ))}
+        <a
+          href="/anuncie/"
+          class="mt-1 block rounded-lg bg-brand-600 px-3 py-2.5 text-center text-sm font-semibold text-white transition hover:bg-brand-700"
+        >
+          Anuncie Aqui
+        </a>
       </div>
     </details>
   </div>

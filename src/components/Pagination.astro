@@ -10,7 +10,7 @@ const { basePath, currentPage, totalPages } = Astro.props;
 if (totalPages <= 1) return;
 
 function pageHref(page: number) {
-  return page === 1 ? basePath : `${basePath}/${page}`;
+  return page === 1 ? `${basePath}/` : `${basePath}/${page}/`;
 }
 
 const pages: (number | 'ellipsis')[] = [];

@@ -13,6 +13,21 @@
       "source": "/sitemap_index.xml",
       "destination": "/sitemap-index.xml",
       "permanent": true
+    },
+    {
+      "source": "/cadastro",
+      "destination": "/",
+      "permanent": true
+    },
+    {
+      "source": "/cadastro/",
+      "destination": "/",
+      "permanent": true
+    },
+    {
+      "source": "/cadastro/:path*",
+      "destination": "/",
+      "permanent": true
     }
   ]
 }

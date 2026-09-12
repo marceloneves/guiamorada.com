@@ -2,18 +2,29 @@
 import '../styles/global.css';
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
+import { organizationSchema, websiteSchema, SITE_URL } from '../lib/schema';
 
 interface Props {
   title?: string;
   description?: string;
+  /** Nós de dados estruturados específicos da página, adicionados ao @graph do site. */
+  schema?: unknown[];
 }
 
 const {
   title = 'Guia Morada — Diretório de Imobiliárias e Corretores',
-  description = 'Encontre imobiliárias e corretores verificados em todo o Brasil. Cadastre seu negócio gratuitamente no maior diretório imobiliário.',
+  description = 'Registro de imobiliárias e corretores de imóveis em cada cidade do Brasil. Busque por cidade ou nome.',
+  schema = [],
 } = Astro.props;
 
 const fullTitle = title.includes('Guia Morada') ? title : `${title} | Guia Morada`;
+
+const canonical = new URL(Astro.url.pathname, SITE_URL).href;
+
+const jsonLd = JSON.stringify({
+  '@context': 'https://schema.org',
+  '@graph': [organizationSchema(), websiteSchema(), ...schema],
+}).replace(/</g, '\\u003c');
 ---
 
 <!doctype html>
@@ -29,6 +40,8 @@ const fullTitle = title.includes('Guia Morada') ? title : `${title} | Guia Morad
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&display=swap" rel="stylesheet" />
     <title>{fullTitle}</title>
+    <link rel="canonical" href={canonical} />
+    <script type="application/ld+json" is:inline set:html={jsonLd} />
   </head>
   <body class="flex min-h-screen flex-col">
     <Header />

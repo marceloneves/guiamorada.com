@@ -6,6 +6,7 @@ import CardCorretor from '../../components/CardCorretor.astro';
 import { imobiliarias, getImobiliariaBySlug } from '../../data/imobiliarias';
 import { getCorretoresByImobiliariaId } from '../../data/corretores';
 import { especialidadeLabels } from '../../types/directory';
+import { imobiliariaSchema, webPageSchema, breadcrumbSchema } from '../../lib/schema';
 
 export function getStaticPaths() {
   return imobiliarias.map((i) => ({ params: { slug: i.slug } }));
@@ -20,9 +21,26 @@ if (!imobiliaria) {
 
 const equipe = getCorretoresByImobiliariaId(imobiliaria.id);
 const whatsappLink = `https://wa.me/${imobiliaria.whatsapp}?text=${encodeURIComponent(`Olá! Vi a ${imobiliaria.nome} no Guia Morada e gostaria de mais informações.`)}`;
+
+const perfil = imobiliariaSchema(imobiliaria);
+const schema = [
+  webPageSchema({
+    type: 'ProfilePage',
+    path: `/imobiliarias/${imobiliaria.slug}/`,
+    name: imobiliaria.nome,
+    description: imobiliaria.descricao,
+    about: { '@id': perfil['@id'] },
+  }),
+  breadcrumbSchema([
+    { name: 'Início', path: '/' },
+    { name: 'Imobiliárias', path: '/imobiliarias/' },
+    { name: imobiliaria.nome, path: `/imobiliarias/${imobiliaria.slug}/` },
+  ]),
+  perfil,
+];
 ---
 
-<Layout title={imobiliaria.nome} description={imobiliaria.descricao}>
+<Layout title={imobiliaria.nome} description={imobiliaria.descricao} schema={schema}>
   <!-- Capa -->
   <div class="relative h-56 sm:h-72 lg:h-80">
     <img

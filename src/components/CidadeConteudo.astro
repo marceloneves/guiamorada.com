@@ -1,0 +1,210 @@
+---
+import type { CidadeData } from '../lib/cidades';
+import {
+  getPrepositionLabel,
+  getEstadoLabel,
+  getEstadoGenitivo,
+  getEstadoNome,
+  getRegiao,
+} from '../lib/cidades';
+import { loadCidadesIndex } from '../lib/load-cidade';
+import { getCidadeStats, listar, porcentagem } from '../lib/cidade-stats';
+import { cidadeFaq } from '../lib/cidade-faq';
+
+interface Props {
+  data: CidadeData;
+}
+
+const { data } = Astro.props;
+
+const prepLabel = getPrepositionLabel(data.prep, data.cidade);
+const estadoLabel = getEstadoLabel(data.estado);
+const estadoGenitivo = getEstadoGenitivo(data.estado);
+const estadoNome = getEstadoNome(data.estado);
+const regiao = getRegiao(data.estado);
+const stats = getCidadeStats(data);
+
+const outrasCidades = loadCidadesIndex()
+  .filter((c) => c.estado === data.estado && c.slug !== data.slug)
+  .sort((a, b) => b.total - a.total)
+  .slice(0, 12);
+
+const faq = cidadeFaq(data.cidade);
+
+const precos = [
+  { servico: 'Comissão na venda de imóvel urbano', faixa: '5% a 6% do valor da venda' },
+  { servico: 'Comissão na venda de imóvel rural', faixa: '8% a 10% do valor da venda' },
+  { servico: 'Taxa de administração de aluguel', faixa: '8% a 12% do aluguel mensal' },
+  { servico: 'Taxa de intermediação na locação', faixa: '50% a 100% do primeiro aluguel' },
+  { servico: 'Avaliação mercadológica de imóvel', faixa: 'R$ 300 a R$ 1.500' },
+];
+
+const dicas = [
+  'Confirme o CRECI da empresa (CRECI-J) e do corretor que vai atender (CRECI-F) na consulta pública do conselho do estado.',
+  'Peça o contrato de intermediação por escrito, com prazo, valor da comissão e o que acontece se o negócio for fechado depois do prazo.',
+  'Verifique se o contrato prevê exclusividade e por quanto tempo — isso muda sua liberdade de negociar por conta própria.',
+  'Na locação, confirme o que a taxa de administração cobre: repasse, cobrança, vistoria, reajuste e acompanhamento de inadimplência.',
+  'Peça a lista completa de custos antes de assinar: vistoria, laudos, seguro-fiança, análise cadastral e taxas de cartório.',
+  'Combine quem paga a comissão e em que momento ela é devida (assinatura da escritura, liberação do financiamento ou entrega das chaves).',
+  'Desconfie de cobrança antecipada só para cadastrar ou anunciar o imóvel, e de promessas de venda em prazo garantido.',
+];
+
+// Frases montadas no frontmatter para não deixar espaços soltos antes de vírgulas e pontos.
+const frases1 = [
+  `${data.cidade} fica ${estadoLabel}, na Região ${regiao} do país, e reúne ${data.total.toLocaleString('pt-BR')} ${
+    data.total === 1 ? 'empresa cadastrada' : 'empresas cadastradas'
+  } no setor imobiliário${stats.totalBairros > 1 ? `, distribuídas por ${stats.totalBairros} bairros` : ''}.`,
+];
+if (stats.porteDominante) {
+  frases1.push(
+    `A maior parte é ${stats.porteDominante.nome.toLowerCase()} (${porcentagem(
+      stats.porteDominante.total,
+      stats.total,
+    )}%) — na prática, equipes enxutas em que você costuma falar direto com o responsável.`,
+  );
+}
+if (stats.anoMaisAntiga) {
+  frases1.push(
+    stats.abertasUltimos5Anos > 0
+      ? `A mais antiga da lista está aberta desde ${stats.anoMaisAntiga} e ${stats.abertasUltimos5Anos} ${
+          stats.abertasUltimos5Anos === 1 ? 'foi aberta' : 'foram abertas'
+        } nos últimos cinco anos.`
+      : `A mais antiga da lista está aberta desde ${stats.anoMaisAntiga}.`,
+  );
+}
+const paragrafo1 = frases1.join(' ');
+
+const frases2: string[] = [];
+if (stats.bairros.length > 0) {
+  frases2.push(
+    `Os endereços se concentram em ${listar(
+      stats.bairros.slice(0, 3).map((b) => `${b.nome} (${b.total})`),
+    )}, o que encurta o deslocamento de quem mora ou trabalha na região.`,
+  );
+}
+if (stats.areas.length > 0) {
+  frases2.push(
+    `As atividades declaradas mais frequentes são ${listar(
+      stats.areas.slice(0, 3).map((a) => `${a.nome.toLowerCase()} (${a.total})`),
+    )} — vale conferir a atividade de cada empresa antes de ligar, porque nem toda casa atende compra, venda e locação ao mesmo tempo.`,
+  );
+}
+const paragrafo2 = frases2.join(' ');
+
+const frases3: string[] = [];
+if (stats.comTelefone > 0) {
+  frases3.push(
+    `${stats.comTelefone.toLocaleString('pt-BR')} ${
+      stats.comTelefone === 1 ? 'registro traz' : 'registros trazem'
+    } telefone de contato.`,
+  );
+}
+frases3.push(
+  `Confirme por telefone ou WhatsApp o horário de atendimento antes de ir até o endereço, sobretudo aos sábados.`,
+  `Quem não encontrar o que procura ${prepLabel} pode consultar as cidades vizinhas ${estadoGenitivo}, listadas no fim desta página.`,
+  `Cada ficha acima traz razão social, endereço, telefone e atividade principal para você comparar antes de entrar em contato.`,
+);
+const paragrafo3 = frases3.join(' ');
+---
+
+<section class="mt-14 border-t border-stone-200 pt-12">
+  <h2 class="font-display text-2xl font-bold text-stone-900 sm:text-3xl">
+    Imobiliárias {prepLabel} ({data.estado})
+  </h2>
+
+  <div class="mt-5 space-y-4 leading-relaxed text-stone-600">
+    <p>{paragrafo1}</p>
+    {paragrafo2 && <p>{paragrafo2}</p>}
+    <p>{paragrafo3}</p>
+  </div>
+
+  <h2 class="font-display mt-10 text-xl font-semibold text-stone-900">
+    Quanto custa contratar uma imobiliária {prepLabel}
+  </h2>
+  <p class="mt-3 leading-relaxed text-stone-600">
+    O que se paga a uma imobiliária {prepLabel} muda conforme o tipo de negócio, o valor do imóvel e os serviços
+    incluídos. As faixas abaixo servem de referência para você comparar propostas:
+  </p>
+
+  <div class="mt-5 overflow-x-auto">
+    <table class="w-full min-w-[32rem] border-collapse text-left text-sm">
+      <caption class="sr-only">Faixas de referência para serviços imobiliários {prepLabel}</caption>
+      <thead>
+        <tr class="border-b border-stone-200 text-xs uppercase tracking-wide text-stone-500">
+          <th scope="col" class="py-3 pr-4 font-medium">Serviço</th>
+          <th scope="col" class="py-3 font-medium">Faixa de referência</th>
+        </tr>
+      </thead>
+      <tbody>
+        {precos.map((linha) => (
+          <tr class="border-b border-stone-100">
+            <td class="py-3 pr-4 text-stone-700">{linha.servico}</td>
+            <td class="py-3 font-medium text-stone-900">{linha.faixa}</td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  </div>
+  <p class="mt-3 text-xs leading-relaxed text-stone-400">
+    Faixas de referência do mercado brasileiro, reunidas para orientar a comparação — não são tabela oficial nem cotação
+    das empresas listadas nesta página. Os percentuais são negociáveis e devem constar do contrato.
+  </p>
+
+  <h2 class="font-display mt-10 text-xl font-semibold text-stone-900">Antes de fechar contrato</h2>
+  <ul class="mt-4 space-y-2.5 text-stone-600">
+    {dicas.map((dica) => (
+      <li class="flex items-start gap-2.5 leading-relaxed">
+        <svg class="mt-1.5 h-3.5 w-3.5 shrink-0 text-brand-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7" />
+        </svg>
+        <span>{dica}</span>
+      </li>
+    ))}
+  </ul>
+
+  <h2 class="font-display mt-10 text-xl font-semibold text-stone-900">
+    Perguntas frequentes sobre imobiliárias {prepLabel}
+  </h2>
+  <div class="mt-4 divide-y divide-stone-200 border-y border-stone-200">
+    {faq.map((item) => (
+      <details class="group py-4">
+        <summary class="flex cursor-pointer list-none items-center justify-between gap-3 font-medium text-stone-800">
+          {item.p}
+          <svg class="h-4 w-4 shrink-0 text-stone-400 transition group-open:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+          </svg>
+        </summary>
+        <p class="mt-3 leading-relaxed text-stone-600">{item.r}</p>
+      </details>
+    ))}
+  </div>
+
+  {outrasCidades.length > 0 && (
+    <>
+      <h2 class="font-display mt-10 text-xl font-semibold text-stone-900">Outras cidades {estadoGenitivo}</h2>
+      <div class="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        {outrasCidades.map((cidade) => (
+          <a
+            href={`/${cidade.slug}/`}
+            class="group rounded-xl border border-stone-200 bg-white px-4 py-3.5 transition hover:border-brand-300 hover:shadow-md"
+          >
+            <span class="block font-medium text-stone-900 group-hover:text-brand-700">{cidade.cidade}</span>
+            <span class="mt-0.5 block text-sm text-muted">
+              {cidade.total.toLocaleString('pt-BR')} {cidade.total === 1 ? 'imobiliária' : 'imobiliárias'}
+            </span>
+            <span class="mt-1 block text-sm font-medium text-brand-700">Ver página da cidade →</span>
+          </a>
+        ))}
+      </div>
+    </>
+  )}
+
+  <div class="mt-8 flex flex-wrap gap-4 text-sm">
+    <a href={`/imobiliarias/cidades/#uf-${data.estado.toLowerCase()}`} class="font-medium text-brand-700 hover:underline">
+      Ver todas as cidades {estadoGenitivo}
+    </a>
+    <a href="/imobiliarias/cidades/" class="font-medium text-stone-600 hover:text-brand-700 hover:underline">
+      ← Voltar à lista completa de cidades
+    </a>
+  </div>
+</section>

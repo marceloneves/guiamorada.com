@@ -5,16 +5,37 @@ import StatsBar from '../components/StatsBar.astro';
 import SectionHeading from '../components/SectionHeading.astro';
 import CardCorretor from '../components/CardCorretor.astro';
 import { loadCidadesIndex } from '../lib/load-cidade';
-import { getPrepositionLabel } from '../lib/cidades';
+import { getPrepositionLabel, getCapitais } from '../lib/cidades';
 import { corretores } from '../data/corretores';
+import { webPageSchema, itemListSchema, corretorSchema } from '../lib/schema';
 
 const cidadesIndex = loadCidadesIndex();
 const totalImobiliarias = cidadesIndex.reduce((s, c) => s + c.total, 0);
-const topCidades = cidadesIndex.slice(0, 6);
+const capitais = getCapitais(cidadesIndex);
 const destaquesCorret = corretores.filter((c) => c.destaque).slice(0, 4);
+
+const schema = [
+  webPageSchema({
+    path: '/',
+    name: 'Guia Morada — Diretório de Imobiliárias e Corretores',
+    description:
+      'Registro de imobiliárias e corretores de imóveis em cada cidade do Brasil. Busque por cidade ou nome.',
+  }),
+  itemListSchema(
+    capitais.map((c) => ({
+      name: `Imobiliárias ${getPrepositionLabel(c.prep, c.cidade)}`,
+      path: `/${c.slug}/`,
+    })),
+    'Imobiliárias nas capitais',
+  ),
+  itemListSchema(
+    destaquesCorret.map((c) => ({ name: c.nome, path: `/corretores/${c.slug}/` })),
+    'Corretores cadastrados',
+  ),
+];
 ---
 
-<Layout>
+<Layout schema={schema}>
   <Hero topCidades={cidadesIndex.slice(0, 4)} totalImobiliarias={totalImobiliarias} />
   <StatsBar />
 
@@ -22,13 +43,13 @@ const destaquesCorret = corretores.filter((c) => c.destaque).slice(0, 4);
   <section class="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
     <SectionHeading
       title="Imobiliárias por cidade"
-      subtitle="Navegue pelo diretório completo de imobiliárias em todo o Brasil."
-      action={{ href: '/imobiliarias/cidades', label: 'Ver todas as cidades' }}
+      subtitle="As 27 capitais brasileiras. Veja o diretório completo para as demais cidades."
+      action={{ href: '/imobiliarias/cidades/', label: 'Ver todas as cidades' }}
     />
     <div class="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-      {topCidades.map((city) => (
+      {capitais.map((city) => (
         <a
-          href={`/${city.slug}`}
+          href={`/${city.slug}/`}
           class="group flex items-center justify-between rounded-2xl border border-stone-200 bg-white p-5 transition hover:border-brand-300 hover:shadow-lg hover:shadow-brand-900/5"
         >
           <div>
@@ -48,9 +69,9 @@ const destaquesCorret = corretores.filter((c) => c.destaque).slice(0, 4);
   <!-- Corretores em destaque -->
   <section class="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
     <SectionHeading
-      title="Corretores recomendados"
-      subtitle="Profissionais com as melhores avaliações dos clientes."
-      action={{ href: '/corretores', label: 'Ver todos' }}
+      title="Corretores cadastrados"
+      subtitle="Profissionais com registro no diretório, por cidade."
+      action={{ href: '/corretores/', label: 'Ver todos' }}
     />
     <div class="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
       {destaquesCorret.map((corretor) => (
@@ -59,7 +80,7 @@ const destaquesCorret = corretores.filter((c) => c.destaque).slice(0, 4);
     </div>
   </section>
 
-  <!-- CTA Cadastro -->
+  <!-- CTA Anuncie -->
   <section class="mx-auto max-w-7xl px-4 pb-20 sm:px-6 lg:px-8">
     <div class="relative overflow-hidden rounded-3xl bg-brand-800 px-6 py-14 text-center sm:px-12">
       <div class="absolute inset-0 opacity-20">
@@ -71,20 +92,22 @@ const destaquesCorret = corretores.filter((c) => c.destaque).slice(0, 4);
           Faça parte do Guia Morada
         </h2>
         <p class="mx-auto mt-4 max-w-xl text-brand-100">
-          Cadastre sua imobiliária ou perfil de corretor gratuitamente e alcance milhares de clientes em busca do imóvel ideal.
+          Registre sua imobiliária ou seu perfil de corretor na cidade em que você atua. Preço fixo por período, sem comissão por contato.
         </p>
         <div class="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
           <a
-            href="/cadastro?tipo=imobiliaria"
+            href="/anuncie/"
             class="inline-flex w-full items-center justify-center rounded-xl bg-white px-6 py-3 text-sm font-semibold text-brand-800 transition hover:bg-brand-50 sm:w-auto"
           >
-            Cadastrar imobiliária
+            Ver planos e preços
           </a>
           <a
-            href="/cadastro?tipo=corretor"
+            href="https://wa.me/5548988105199?text=Ol%C3%A1!%20Quero%20anunciar%20no%20Guia%20Morada."
+            target="_blank"
+            rel="noopener noreferrer"
             class="inline-flex w-full items-center justify-center rounded-xl border border-white/30 px-6 py-3 text-sm font-semibold text-white transition hover:bg-white/10 sm:w-auto"
           >
-            Cadastrar como corretor
+            Falar no WhatsApp
           </a>
         </div>
       </div>
