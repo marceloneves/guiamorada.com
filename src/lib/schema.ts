@@ -177,17 +177,6 @@ export function imobiliariaSchema(imobiliaria: Imobiliaria) {
       addressCountry: 'BR',
     },
     areaServed: { '@type': 'City', name: imobiliaria.endereco.cidade },
-    ...(imobiliaria.totalAvaliacoes > 0
-      ? {
-          aggregateRating: {
-            '@type': 'AggregateRating',
-            ratingValue: imobiliaria.avaliacao,
-            reviewCount: imobiliaria.totalAvaliacoes,
-            bestRating: 5,
-            worstRating: 1,
-          },
-        }
-      : {}),
   };
 }
 
@@ -216,17 +205,6 @@ export function corretorSchema(corretor: Corretor, imobiliaria?: Imobiliaria) {
             '@type': 'RealEstateAgent',
             name: imobiliaria.nome,
             url: absoluteUrl(`/imobiliarias/${imobiliaria.slug}/`),
-          },
-        }
-      : {}),
-    ...(corretor.totalAvaliacoes > 0
-      ? {
-          aggregateRating: {
-            '@type': 'AggregateRating',
-            ratingValue: corretor.avaliacao,
-            reviewCount: corretor.totalAvaliacoes,
-            bestRating: 5,
-            worstRating: 1,
           },
         }
       : {}),

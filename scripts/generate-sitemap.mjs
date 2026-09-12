@@ -16,6 +16,13 @@ const PAGES_DIR = path.join(ROOT, 'src/pages');
 /** Máximo recomendado para fetch confiável pelo Google Search Console */
 const URLS_PER_SITEMAP = 1000;
 
+/** Sitemaps separados por tipo de conteúdo. */
+const GRUPOS = [
+  { id: 'paginas', label: 'páginas institucionais' },
+  { id: 'imobiliarias', label: 'imobiliárias' },
+  { id: 'corretores', label: 'corretores' },
+];
+
 function escapeXml(value) {
   return String(value)
     .replace(/&/g, '&amp;')
@@ -36,38 +43,41 @@ function toUrl(pathname) {
 }
 
 function collectUrls() {
-  const urls = new Set();
   const lastmod = new Date().toISOString().split('T')[0];
+  const grupos = Object.fromEntries(GRUPOS.map((g) => [g.id, new Set()]));
 
-  const add = (pathname) => urls.add(JSON.stringify({ loc: toUrl(pathname), lastmod }));
+  const add = (grupo, pathname) =>
+    grupos[grupo].add(JSON.stringify({ loc: toUrl(pathname), lastmod }));
 
-  [
-    '/',
-    '/anuncie',
-    '/corretores',
-    '/imobiliarias',
-    '/imobiliarias/cidades',
-    '/sobre',
-  ].forEach(add);
+  ['/', '/anuncie', '/sobre'].forEach((p) => add('paginas', p));
+
+  // Índices de listagem entram junto do conteúdo que apresentam.
+  ['/imobiliarias', '/imobiliarias/cidades'].forEach((p) => add('imobiliarias', p));
+  add('corretores', '/corretores');
 
   extractSlugs(path.join(ROOT, 'src/data/corretores.ts')).forEach((slug) =>
-    add(`/corretores/${slug}`),
+    add('corretores', `/corretores/${slug}`),
   );
   extractSlugs(path.join(ROOT, 'src/data/imobiliarias.ts')).forEach((slug) =>
-    add(`/imobiliarias/${slug}`),
+    add('imobiliarias', `/imobiliarias/${slug}`),
   );
 
   if (fs.existsSync(INDEX_FILE)) {
     const cidades = JSON.parse(fs.readFileSync(INDEX_FILE, 'utf-8'));
     for (const city of cidades) {
-      add(`/${city.slug}`);
+      add('imobiliarias', `/${city.slug}`);
       for (let page = 2; page <= city.totalPages; page++) {
-        add(`/${city.slug}/${page}`);
+        add('imobiliarias', `/${city.slug}/${page}`);
       }
     }
   }
 
-  return [...urls].map((entry) => JSON.parse(entry)).sort((a, b) => a.loc.localeCompare(b.loc));
+  return Object.fromEntries(
+    Object.entries(grupos).map(([id, set]) => [
+      id,
+      [...set].map((entry) => JSON.parse(entry)).sort((a, b) => a.loc.localeCompare(b.loc)),
+    ]),
+  );
 }
 
 function buildUrlset(entries) {
@@ -115,13 +125,13 @@ function cleanOldSitemapRoutes() {
   if (!fs.existsSync(PAGES_DIR)) return;
 
   for (const file of fs.readdirSync(PAGES_DIR)) {
-    if (/^sitemap-\d+\.xml\.ts$/.test(file)) {
+    if (/^sitemap-[a-z]+(-\d+)?\.xml\.ts$/.test(file) || /^sitemap-\d+\.xml\.ts$/.test(file)) {
       fs.unlinkSync(path.join(PAGES_DIR, file));
     }
   }
 
   for (const file of fs.readdirSync(PUBLIC_DIR)) {
-    if (/^sitemap-\d+\.xml$/.test(file)) {
+    if (/^sitemap-[a-z]+(-\d+)?\.xml$/.test(file) || /^sitemap-\d+\.xml$/.test(file)) {
       fs.unlinkSync(path.join(PUBLIC_DIR, file));
     }
   }
@@ -130,32 +140,38 @@ function cleanOldSitemapRoutes() {
 function main() {
   cleanOldSitemapRoutes();
 
-  const urls = collectUrls();
-  const chunks = [];
-
-  for (let i = 0; i < urls.length; i += URLS_PER_SITEMAP) {
-    chunks.push(urls.slice(i, i + URLS_PER_SITEMAP));
-  }
-
-  if (chunks.length === 0) {
-    chunks.push([]);
-  }
-
+  const porGrupo = collectUrls();
   const sitemapFiles = [];
+  let totalUrls = 0;
 
-  chunks.forEach((chunk, index) => {
-    const filename = `sitemap-${index}.xml`;
-    fs.writeFileSync(path.join(PUBLIC_DIR, filename), buildUrlset(chunk));
-    fs.writeFileSync(path.join(PAGES_DIR, `${filename}.ts`), buildSitemapRoute(filename));
-    sitemapFiles.push(filename);
-  });
+  for (const grupo of GRUPOS) {
+    const urls = porGrupo[grupo.id] ?? [];
+    totalUrls += urls.length;
 
-  fs.writeFileSync(path.join(PUBLIC_DIR, 'sitemap-index.xml'), buildSitemapIndex(sitemapFiles));
+    const chunks = [];
+    for (let i = 0; i < urls.length; i += URLS_PER_SITEMAP) {
+      chunks.push(urls.slice(i, i + URLS_PER_SITEMAP));
+    }
+    if (chunks.length === 0) chunks.push([]);
 
-  console.log(`✓ ${urls.length} URLs em ${sitemapFiles.length} sitemap(s) (${URLS_PER_SITEMAP} URLs/arquivo)`);
-  sitemapFiles.forEach((file) => {
-    console.log(`  → public/${file}`);
-    console.log(`  → src/pages/${file}.ts`);
+    // Um grupo pequeno vira um arquivo só; acima de 1.000 URLs ele é numerado.
+    chunks.forEach((chunk, index) => {
+      const filename =
+        chunks.length === 1 ? `sitemap-${grupo.id}.xml` : `sitemap-${grupo.id}-${index + 1}.xml`;
+      fs.writeFileSync(path.join(PUBLIC_DIR, filename), buildUrlset(chunk));
+      fs.writeFileSync(path.join(PAGES_DIR, `${filename}.ts`), buildSitemapRoute(filename));
+      sitemapFiles.push({ filename, grupo: grupo.label, total: chunk.length });
+    });
+  }
+
+  fs.writeFileSync(
+    path.join(PUBLIC_DIR, 'sitemap-index.xml'),
+    buildSitemapIndex(sitemapFiles.map((f) => f.filename)),
+  );
+
+  console.log(`✓ ${totalUrls} URLs em ${sitemapFiles.length} sitemap(s), separados por tipo`);
+  sitemapFiles.forEach(({ filename, grupo, total }) => {
+    console.log(`  → public/${filename} — ${grupo} (${total} URLs)`);
   });
   console.log('  → public/sitemap-index.xml');
 }
