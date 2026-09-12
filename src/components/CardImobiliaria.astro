@@ -1,7 +1,6 @@
 ---
 import type { Imobiliaria } from '../types/directory';
 import { especialidadeLabels } from '../types/directory';
-import StarRating from './StarRating.astro';
 import Badge from './Badge.astro';
 
 interface Props {
@@ -57,12 +56,8 @@ const { imobiliaria } = Astro.props;
       </div>
 
       <div class="mt-4 flex items-center justify-between border-t border-stone-100 pt-4">
-        <div class="flex items-center gap-2">
-          <StarRating rating={imobiliaria.avaliacao} />
-          <span class="text-sm font-medium text-stone-700">{imobiliaria.avaliacao.toFixed(1)}</span>
-          <span class="text-sm text-muted">({imobiliaria.totalAvaliacoes})</span>
-        </div>
-        <span class="text-xs text-muted">{imobiliaria.corretoresCount} corretores</span>
+        <span class="text-sm text-muted">CRECI {imobiliaria.creci}</span>
+        <span class="text-sm text-muted">{imobiliaria.corretoresCount} corretores</span>
       </div>
     </div>
   </a>

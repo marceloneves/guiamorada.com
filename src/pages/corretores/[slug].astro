@@ -1,6 +1,5 @@
 ---
 import Layout from '../../layouts/Layout.astro';
-import StarRating from '../../components/StarRating.astro';
 import Badge from '../../components/Badge.astro';
 import { corretores, getCorretorBySlug } from '../../data/corretores';
 import { getImobiliariaById } from '../../data/imobiliarias';
@@ -71,11 +70,6 @@ const schema = [
           </p>
 
           <div class="mt-3 flex flex-wrap items-center gap-4">
-            <div class="flex items-center gap-2">
-              <StarRating rating={corretor.avaliacao} size="md" />
-              <span class="font-semibold">{corretor.avaliacao.toFixed(1)}</span>
-              <span class="text-sm text-muted">({corretor.totalAvaliacoes} avaliações)</span>
-            </div>
             <span class="text-sm text-muted">CRECI {corretor.creci}</span>
             <span class="text-sm text-muted">{corretor.anosExperiencia} anos de experiência</span>
           </div>

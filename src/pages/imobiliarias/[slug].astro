@@ -1,6 +1,5 @@
 ---
 import Layout from '../../layouts/Layout.astro';
-import StarRating from '../../components/StarRating.astro';
 import Badge from '../../components/Badge.astro';
 import CardCorretor from '../../components/CardCorretor.astro';
 import { imobiliarias, getImobiliariaBySlug } from '../../data/imobiliarias';
@@ -71,11 +70,6 @@ const schema = [
             {imobiliaria.endereco.bairro}, {imobiliaria.endereco.cidade} — {imobiliaria.endereco.estado}
           </p>
           <div class="mt-3 flex flex-wrap items-center gap-4">
-            <div class="flex items-center gap-2">
-              <StarRating rating={imobiliaria.avaliacao} size="md" />
-              <span class="font-semibold">{imobiliaria.avaliacao.toFixed(1)}</span>
-              <span class="text-sm text-muted">({imobiliaria.totalAvaliacoes} avaliações)</span>
-            </div>
             <span class="text-sm text-muted">CRECI {imobiliaria.creci}</span>
             <span class="text-sm text-muted">Desde {imobiliaria.anoFundacao}</span>
           </div>

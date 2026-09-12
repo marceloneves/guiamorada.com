@@ -1,7 +1,6 @@
 ---
 import type { Corretor } from '../types/directory';
 import { especialidadeLabels } from '../types/directory';
-import StarRating from './StarRating.astro';
 import Badge from './Badge.astro';
 
 interface Props {
@@ -55,12 +54,8 @@ const { corretor } = Astro.props;
     </div>
 
     <div class="mt-4 flex items-center justify-between border-t border-stone-100 pt-4">
-      <div class="flex items-center gap-2">
-        <StarRating rating={corretor.avaliacao} />
-        <span class="text-sm font-medium text-stone-700">{corretor.avaliacao.toFixed(1)}</span>
-        <span class="text-sm text-muted">({corretor.totalAvaliacoes})</span>
-      </div>
-      <span class="text-xs text-muted">CRECI {corretor.creci}</span>
+      <span class="text-sm text-muted">{corretor.anosExperiencia} anos de experiência</span>
+      <span class="text-sm text-muted">CRECI {corretor.creci}</span>
     </div>
   </a>
 </article>
