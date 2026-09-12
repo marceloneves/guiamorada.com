@@ -1,15 +1,18 @@
 ---
 import { loadCidadesIndex } from '../lib/load-cidade';
+import { loadConstrutorasIndex } from '../lib/load-construtoras';
 import { corretores } from '../data/corretores';
 
 const cidades = loadCidadesIndex();
+const construtoras = loadConstrutorasIndex();
 const totalImobiliarias = cidades.reduce((s, c) => s + c.total, 0);
+const totalConstrutoras = construtoras.reduce((s, c) => s + c.total, 0);
 
 const stats = [
   { value: totalImobiliarias, label: 'Imobiliárias', suffix: '' },
+  { value: totalConstrutoras, label: 'Construtoras e incorporadoras', suffix: '' },
   { value: corretores.length, label: 'Corretores', suffix: '+' },
   { value: cidades.length, label: 'Cidades', suffix: '' },
-  { value: 27, label: 'Estados', suffix: '' },
 ];
 ---
 

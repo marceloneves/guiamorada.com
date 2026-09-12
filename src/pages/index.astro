@@ -5,6 +5,7 @@ import StatsBar from '../components/StatsBar.astro';
 import SectionHeading from '../components/SectionHeading.astro';
 import CardCorretor from '../components/CardCorretor.astro';
 import { loadCidadesIndex } from '../lib/load-cidade';
+import { loadConstrutorasIndex } from '../lib/load-construtoras';
 import { getPrepositionLabel, getCapitais } from '../lib/cidades';
 import { corretores } from '../data/corretores';
 import { webPageSchema, itemListSchema, corretorSchema } from '../lib/schema';
@@ -12,14 +13,16 @@ import { webPageSchema, itemListSchema, corretorSchema } from '../lib/schema';
 const cidadesIndex = loadCidadesIndex();
 const totalImobiliarias = cidadesIndex.reduce((s, c) => s + c.total, 0);
 const capitais = getCapitais(cidadesIndex);
+const construtorasIndex = loadConstrutorasIndex();
+const totalConstrutoras = construtorasIndex.reduce((s, c) => s + c.total, 0);
 const destaquesCorret = corretores.filter((c) => c.destaque).slice(0, 4);
 
 const schema = [
   webPageSchema({
     path: '/',
-    name: 'Guia Morada — Diretório de Imobiliárias e Corretores',
+    name: 'Guia Morada — Diretório de Imobiliárias, Construtoras e Corretores',
     description:
-      'Registro de imobiliárias e corretores de imóveis em cada cidade do Brasil. Busque por cidade ou nome.',
+      'Registro de imobiliárias, construtoras e corretores de imóveis em cada cidade do Brasil. Busque por cidade ou nome.',
   }),
   itemListSchema(
     capitais.map((c) => ({
@@ -28,6 +31,17 @@ const schema = [
     })),
     'Imobiliárias nas capitais',
   ),
+  ...(construtorasIndex.length
+    ? [
+        itemListSchema(
+          construtorasIndex.map((c) => ({
+            name: `Construtoras ${getPrepositionLabel(c.prep, c.cidade)}`,
+            path: `/${c.slug}/`,
+          })),
+          'Construtoras e incorporadoras por cidade',
+        ),
+      ]
+    : []),
   itemListSchema(
     destaquesCorret.map((c) => ({ name: c.nome, path: `/corretores/${c.slug}/` })),
     'Corretores cadastrados',
@@ -36,7 +50,11 @@ const schema = [
 ---
 
 <Layout schema={schema}>
-  <Hero topCidades={cidadesIndex.slice(0, 4)} totalImobiliarias={totalImobiliarias} />
+  <Hero
+    topCidades={cidadesIndex.slice(0, 4)}
+    totalImobiliarias={totalImobiliarias}
+    totalConstrutoras={totalConstrutoras}
+  />
   <StatsBar />
 
   <!-- Principais cidades -->
@@ -65,6 +83,35 @@ const schema = [
       ))}
     </div>
   </section>
+
+  <!-- Construtoras e incorporadoras -->
+  {construtorasIndex.length > 0 && (
+    <section class="mx-auto max-w-7xl px-4 pb-4 sm:px-6 lg:px-8">
+      <SectionHeading
+        title="Construtoras e incorporadoras"
+        subtitle="Quem constrói e incorpora na cidade, direto do cadastro público de CNPJ da Receita Federal."
+        action={{ href: '/construtoras/', label: 'Ver todas' }}
+      />
+      <div class="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        {construtorasIndex.map((cidade) => (
+          <a
+            href={`/${cidade.slug}/`}
+            class="group flex items-center justify-between rounded-2xl border border-stone-200 bg-white p-5 transition hover:border-brand-300 hover:shadow-lg hover:shadow-brand-900/5"
+          >
+            <div>
+              <h3 class="font-semibold text-stone-900 group-hover:text-brand-700">
+                Construtoras {getPrepositionLabel(cidade.prep, cidade.cidade)}
+              </h3>
+              <p class="mt-1 text-sm text-muted">{cidade.estado}</p>
+            </div>
+            <span class="rounded-full bg-brand-50 px-3 py-1 text-sm font-semibold text-brand-800">
+              {cidade.total.toLocaleString('pt-BR')}
+            </span>
+          </a>
+        ))}
+      </div>
+    </section>
+  )}
 
   <!-- Corretores em destaque -->
   <section class="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">

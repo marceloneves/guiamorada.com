@@ -4,9 +4,11 @@ import type { CidadeIndexEntry } from '../lib/cidades';
 interface Props {
   topCidades: CidadeIndexEntry[];
   totalImobiliarias: number;
+  totalConstrutoras: number;
 }
 
-const { topCidades, totalImobiliarias } = Astro.props;
+const { topCidades, totalImobiliarias, totalConstrutoras } = Astro.props;
+const totalEmpresas = totalImobiliarias + totalConstrutoras;
 ---
 
 <section class="gradient-hero relative overflow-hidden px-4 pb-20 pt-16 sm:px-6 sm:pb-28 sm:pt-24 lg:px-8">
@@ -18,15 +20,16 @@ const { topCidades, totalImobiliarias } = Astro.props;
   <div class="relative mx-auto max-w-4xl text-center">
     <span class="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-4 py-1.5 text-sm font-medium text-brand-100 backdrop-blur-sm">
       <span class="h-2 w-2 rounded-full bg-emerald-400 animate-pulse"></span>
-      {totalImobiliarias.toLocaleString('pt-BR')}+ imobiliárias cadastradas
+      {totalEmpresas.toLocaleString('pt-BR')}+ empresas cadastradas
     </span>
 
     <h1 class="font-display mt-6 text-balance text-4xl font-bold tracking-tight text-white sm:text-5xl lg:text-6xl">
-      Encontre a imobiliária ou corretor ideal
+      Imobiliárias, construtoras e corretores perto de você
     </h1>
 
     <p class="mx-auto mt-5 max-w-2xl text-balance text-lg leading-relaxed text-brand-100/90 sm:text-xl">
-      O Guia Morada reúne o registro de imobiliárias e corretores em cada cidade do Brasil. Busque por cidade ou nome.
+      O Guia Morada reúne o registro de imobiliárias, construtoras e corretores de imóveis em cada cidade do Brasil.
+      Busque por cidade ou nome.
     </p>
 
     <form
