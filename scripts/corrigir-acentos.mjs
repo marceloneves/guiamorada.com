@@ -1,6 +1,7 @@
 /**
  * Corrige a acentuação dos nomes de cidade nos dados gerados, usando a relação
- * de municípios do IBGE (src/data/municipios-ibge.json).
+ * de municípios do IBGE (src/data/municipios-ibge.json, que também guarda o
+ * código IBGE e o QID do Wikidata de cada município).
  *
  * Os slugs NÃO mudam — só o nome exibido. Rode depois de cada importação:
  *   node scripts/corrigir-acentos.mjs
@@ -29,7 +30,7 @@ function slugify(valor) {
 }
 
 function nomeCorreto(cidade, uf) {
-  return mapa[`${uf}:${slugify(cidade)}`] ?? cidade;
+  return mapa[`${uf}:${slugify(cidade)}`]?.nome ?? cidade;
 }
 
 const index = JSON.parse(fs.readFileSync(INDEX_FILE, 'utf-8'));

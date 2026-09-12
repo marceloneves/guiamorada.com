@@ -65,34 +65,37 @@ export type Regiao = 'Norte' | 'Nordeste' | 'Centro-Oeste' | 'Sudeste' | 'Sul' |
 
 export const REGIOES: Regiao[] = ['Norte', 'Nordeste', 'Centro-Oeste', 'Sudeste', 'Sul', 'Exterior'];
 
-export const ESTADOS: Record<string, { nome: string; regiao: Regiao; prep: 'no' | 'na' | 'em' }> = {
-  AC: { nome: 'Acre', regiao: 'Norte', prep: 'no' },
-  AP: { nome: 'Amapá', regiao: 'Norte', prep: 'no' },
-  AM: { nome: 'Amazonas', regiao: 'Norte', prep: 'no' },
-  PA: { nome: 'Pará', regiao: 'Norte', prep: 'no' },
-  RO: { nome: 'Rondônia', regiao: 'Norte', prep: 'em' },
-  RR: { nome: 'Roraima', regiao: 'Norte', prep: 'em' },
-  TO: { nome: 'Tocantins', regiao: 'Norte', prep: 'no' },
-  AL: { nome: 'Alagoas', regiao: 'Nordeste', prep: 'em' },
-  BA: { nome: 'Bahia', regiao: 'Nordeste', prep: 'na' },
-  CE: { nome: 'Ceará', regiao: 'Nordeste', prep: 'no' },
-  MA: { nome: 'Maranhão', regiao: 'Nordeste', prep: 'no' },
-  PB: { nome: 'Paraíba', regiao: 'Nordeste', prep: 'na' },
-  PE: { nome: 'Pernambuco', regiao: 'Nordeste', prep: 'em' },
-  PI: { nome: 'Piauí', regiao: 'Nordeste', prep: 'no' },
-  RN: { nome: 'Rio Grande do Norte', regiao: 'Nordeste', prep: 'no' },
-  SE: { nome: 'Sergipe', regiao: 'Nordeste', prep: 'em' },
-  DF: { nome: 'Distrito Federal', regiao: 'Centro-Oeste', prep: 'no' },
-  GO: { nome: 'Goiás', regiao: 'Centro-Oeste', prep: 'em' },
-  MT: { nome: 'Mato Grosso', regiao: 'Centro-Oeste', prep: 'em' },
-  MS: { nome: 'Mato Grosso do Sul', regiao: 'Centro-Oeste', prep: 'em' },
-  ES: { nome: 'Espírito Santo', regiao: 'Sudeste', prep: 'no' },
-  MG: { nome: 'Minas Gerais', regiao: 'Sudeste', prep: 'em' },
-  RJ: { nome: 'Rio de Janeiro', regiao: 'Sudeste', prep: 'no' },
-  SP: { nome: 'São Paulo', regiao: 'Sudeste', prep: 'em' },
-  PR: { nome: 'Paraná', regiao: 'Sul', prep: 'no' },
-  RS: { nome: 'Rio Grande do Sul', regiao: 'Sul', prep: 'no' },
-  SC: { nome: 'Santa Catarina', regiao: 'Sul', prep: 'em' },
+export const ESTADOS: Record<
+  string,
+  { nome: string; regiao: Regiao; prep: 'no' | 'na' | 'em'; wikidata?: string }
+> = {
+  AC: { nome: 'Acre', regiao: 'Norte', prep: 'no', wikidata: 'Q40780' },
+  AP: { nome: 'Amapá', regiao: 'Norte', prep: 'no', wikidata: 'Q40130' },
+  AM: { nome: 'Amazonas', regiao: 'Norte', prep: 'no', wikidata: 'Q40040' },
+  PA: { nome: 'Pará', regiao: 'Norte', prep: 'no', wikidata: 'Q39517' },
+  RO: { nome: 'Rondônia', regiao: 'Norte', prep: 'em', wikidata: 'Q43235' },
+  RR: { nome: 'Roraima', regiao: 'Norte', prep: 'em', wikidata: 'Q42508' },
+  TO: { nome: 'Tocantins', regiao: 'Norte', prep: 'no', wikidata: 'Q43695' },
+  AL: { nome: 'Alagoas', regiao: 'Nordeste', prep: 'em', wikidata: 'Q40885' },
+  BA: { nome: 'Bahia', regiao: 'Nordeste', prep: 'na', wikidata: 'Q40430' },
+  CE: { nome: 'Ceará', regiao: 'Nordeste', prep: 'no', wikidata: 'Q40123' },
+  MA: { nome: 'Maranhão', regiao: 'Nordeste', prep: 'no', wikidata: 'Q42362' },
+  PB: { nome: 'Paraíba', regiao: 'Nordeste', prep: 'na', wikidata: 'Q38088' },
+  PE: { nome: 'Pernambuco', regiao: 'Nordeste', prep: 'em', wikidata: 'Q40942' },
+  PI: { nome: 'Piauí', regiao: 'Nordeste', prep: 'no', wikidata: 'Q42722' },
+  RN: { nome: 'Rio Grande do Norte', regiao: 'Nordeste', prep: 'no', wikidata: 'Q43255' },
+  SE: { nome: 'Sergipe', regiao: 'Nordeste', prep: 'em', wikidata: 'Q43783' },
+  DF: { nome: 'Distrito Federal', regiao: 'Centro-Oeste', prep: 'no', wikidata: 'Q119158' },
+  GO: { nome: 'Goiás', regiao: 'Centro-Oeste', prep: 'em', wikidata: 'Q41587' },
+  MT: { nome: 'Mato Grosso', regiao: 'Centro-Oeste', prep: 'em', wikidata: 'Q42824' },
+  MS: { nome: 'Mato Grosso do Sul', regiao: 'Centro-Oeste', prep: 'em', wikidata: 'Q43319' },
+  ES: { nome: 'Espírito Santo', regiao: 'Sudeste', prep: 'no', wikidata: 'Q43233' },
+  MG: { nome: 'Minas Gerais', regiao: 'Sudeste', prep: 'em', wikidata: 'Q39109' },
+  RJ: { nome: 'Rio de Janeiro', regiao: 'Sudeste', prep: 'no', wikidata: 'Q41428' },
+  SP: { nome: 'São Paulo', regiao: 'Sudeste', prep: 'em', wikidata: 'Q175' },
+  PR: { nome: 'Paraná', regiao: 'Sul', prep: 'no', wikidata: 'Q15499' },
+  RS: { nome: 'Rio Grande do Sul', regiao: 'Sul', prep: 'no', wikidata: 'Q40030' },
+  SC: { nome: 'Santa Catarina', regiao: 'Sul', prep: 'em', wikidata: 'Q41115' },
   EX: { nome: 'Exterior', regiao: 'Exterior', prep: 'no' },
 };
 
@@ -165,4 +168,14 @@ export function getEstadoGenitivo(uf: string): string {
   if (!estado) return uf;
   const artigo = estado.prep === 'no' ? 'do' : estado.prep === 'na' ? 'da' : 'de';
   return `${artigo} ${estado.nome}`;
+}
+
+/** Slug ASCII usado como chave nas tabelas de municípios. */
+export function slugifyNome(valor: string): string {
+  return valor
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
 }

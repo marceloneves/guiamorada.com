@@ -1,6 +1,7 @@
 import type { Corretor, Imobiliaria } from '../types/directory';
 import type { CidadeData, ImobiliariaCadastro } from './cidades';
-import { getEstadoNome, getPrepositionLabel } from './cidades';
+import { ESTADOS, getEstadoNome, getPrepositionLabel, slugifyNome } from './cidades';
+import municipios from '../data/municipios-ibge.json';
 import { cidadeFaq } from './cidade-faq';
 
 export const SITE_URL = 'https://guiamorada.com';
@@ -21,6 +22,70 @@ export function absoluteUrl(path: string): string {
   return `${SITE_URL}${withSlash}`;
 }
 
+/** Q155 = Brasil no Wikidata. */
+const BRASIL_QID = 'Q155';
+
+const wikidataUrl = (qid: string) => `https://www.wikidata.org/wiki/${qid}`;
+
+interface Municipio {
+  nome: string;
+  ibge: number;
+  wikidata?: string;
+}
+
+const tabelaMunicipios = municipios as Record<string, Municipio>;
+
+function municipioInfo(cidade: string, uf: string): Municipio | undefined {
+  return tabelaMunicipios[`${uf}:${slugifyNome(cidade)}`];
+}
+
+export function paisSchema() {
+  return { '@type': 'Country', name: 'Brasil', sameAs: wikidataUrl(BRASIL_QID) };
+}
+
+/** Estado como entidade, ligado ao Wikidata quando há QID. */
+export function estadoSchema(uf: string) {
+  const estado = ESTADOS[uf];
+  return {
+    '@type': 'State',
+    name: getEstadoNome(uf),
+    ...(estado?.wikidata ? { sameAs: wikidataUrl(estado.wikidata) } : {}),
+    containedInPlace: paisSchema(),
+  };
+}
+
+/** Identificador estável do município dentro do @graph. */
+export function cidadeId(cidade: string, uf: string): string {
+  return `${SITE_URL}/#cidade-${uf.toLowerCase()}-${slugifyNome(cidade)}`;
+}
+
+/** Referência ao município já descrito no @graph, para não repetir o nó inteiro. */
+export function cidadeRef(cidade: string, uf: string) {
+  return { '@id': cidadeId(cidade, uf) };
+}
+
+/** Município como entidade, com código IBGE e QID do Wikidata quando existem. */
+export function cidadeSchema(cidade: string, uf: string) {
+  const info = municipioInfo(cidade, uf);
+  return {
+    '@type': 'City',
+    '@id': cidadeId(cidade, uf),
+    name: info?.nome ?? cidade,
+    ...(info?.wikidata ? { sameAs: wikidataUrl(info.wikidata) } : {}),
+    ...(info
+      ? {
+          identifier: {
+            '@type': 'PropertyValue',
+            propertyID: 'https://www.wikidata.org/wiki/Property:P1585',
+            name: 'Código IBGE do município',
+            value: String(info.ibge),
+          },
+        }
+      : {}),
+    containedInPlace: estadoSchema(uf),
+  };
+}
+
 export function organizationSchema() {
   return {
     '@type': 'Organization',
@@ -33,7 +98,7 @@ export function organizationSchema() {
     email: CONTATO.email,
     telephone: CONTATO.telefone,
     sameAs: [CONTATO.whatsapp],
-    areaServed: { '@type': 'Country', name: 'Brasil' },
+    areaServed: paisSchema(),
     contactPoint: {
       '@type': 'ContactPoint',
       contactType: 'atendimento',
@@ -143,11 +208,8 @@ export function imobiliariaCadastroSchema(
         addressCountry: 'BR',
         ...(endereco.cep ? { postalCode: endereco.cep } : {}),
       },
-      areaServed: {
-        '@type': 'City',
-        name: cidade.cidade,
-        containedInPlace: { '@type': 'State', name: getEstadoNome(cidade.estado) },
-      },
+      // O nó completo da cidade vem no about da página; aqui basta a referência.
+      areaServed: cidadeRef(cidade.cidade, cidade.estado),
     },
   };
 }
@@ -176,7 +238,7 @@ export function imobiliariaSchema(imobiliaria: Imobiliaria) {
       addressRegion: imobiliaria.endereco.estado,
       addressCountry: 'BR',
     },
-    areaServed: { '@type': 'City', name: imobiliaria.endereco.cidade },
+    areaServed: cidadeSchema(imobiliaria.endereco.cidade, imobiliaria.endereco.estado),
   };
 }
 
@@ -198,7 +260,7 @@ export function corretorSchema(corretor: Corretor, imobiliaria?: Imobiliaria) {
       addressRegion: corretor.endereco.estado,
       addressCountry: 'BR',
     },
-    areaServed: { '@type': 'City', name: corretor.endereco.cidade },
+    areaServed: cidadeSchema(corretor.endereco.cidade, corretor.endereco.estado),
     ...(imobiliaria
       ? {
           worksFor: {
@@ -244,7 +306,7 @@ export function planoServiceSchema(plano: {
     serviceType: 'Anúncio em diretório imobiliário',
     description: plano.descricao,
     provider: { '@id': ORG_ID },
-    areaServed: { '@type': 'Country', name: 'Brasil' },
+    areaServed: paisSchema(),
     offers: [
       offer(plano.semestral, 6, `Plano ${plano.nome} semestral`),
       offer(plano.anual, 12, `Plano ${plano.nome} anual`),
@@ -261,7 +323,6 @@ export function cidadeListingSchema(
   const path = page === 1 ? `/${data.slug}/` : `/${data.slug}/${page}/`;
   const prepLabel = getPrepositionLabel(data.prep, data.cidade);
   const nome = `Imobiliárias ${prepLabel}${page > 1 ? ` — página ${page}` : ''}`;
-  const estadoNome = getEstadoNome(data.estado);
   const descricao = `Lista de ${data.total.toLocaleString('pt-BR')} imobiliárias ${prepLabel} (${data.estado}).`;
   const inicio = (page - 1) * imobiliariasNaPagina.length;
 
@@ -272,11 +333,7 @@ export function cidadeListingSchema(
         path,
         name: nome,
         description: descricao,
-        about: {
-          '@type': 'City',
-          name: data.cidade,
-          containedInPlace: { '@type': 'State', name: estadoNome, addressCountry: 'BR' },
-        },
+        about: cidadeSchema(data.cidade, data.estado),
       }),
       dateModified: new Date().toISOString().split('T')[0],
     },
