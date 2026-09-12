@@ -43,6 +43,7 @@ function main() {
     `- [Página inicial](${SITE}/)`,
     `- [Imobiliárias por cidade](${SITE}/imobiliarias/cidades/)`,
     `- [Imobiliárias](${SITE}/imobiliarias/)`,
+    `- [Construtoras e incorporadoras](${SITE}/construtoras/)`,
     `- [Corretores](${SITE}/corretores/)`,
     `- [Anuncie aqui — planos e preços](${SITE}/anuncie/)`,
     `- [Sobre](${SITE}/sobre/)`,

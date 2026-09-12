@@ -67,3 +67,11 @@ export function listar(itens: string[]): string {
 export function porcentagem(parte: number, total: number): number {
   return total > 0 ? Math.round((parte / total) * 100) : 0;
 }
+
+/** "Demais" é o resíduo da classificação da Receita; sozinho não diz nada ao leitor. */
+export function descreverPorte(porte: string): string {
+  const normalizado = porte.trim().toLowerCase();
+  if (normalizado === 'demais') return 'de médio ou grande porte';
+  if (normalizado === 'não informado') return 'sem porte declarado';
+  return normalizado;
+}

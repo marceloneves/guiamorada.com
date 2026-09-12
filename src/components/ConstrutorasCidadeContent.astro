@@ -1,0 +1,79 @@
+---
+import type { ConstrutoraCidadeData } from '../lib/construtoras';
+import { CONSTRUTORAS_POR_PAGINA } from '../lib/construtoras';
+import { getPrepositionLabel, getEstadoLabel, getEstadoGenitivo, getEstadoNome, paginateImobiliarias } from '../lib/cidades';
+import CardImobiliariaCadastro from './CardImobiliariaCadastro.astro';
+import Pagination from './Pagination.astro';
+import ConstrutorasConteudo from './ConstrutorasConteudo.astro';
+
+interface Props {
+  data: ConstrutoraCidadeData;
+  page: number;
+}
+
+const { data, page } = Astro.props;
+const empresas = paginateImobiliarias(data.empresas, page, CONSTRUTORAS_POR_PAGINA);
+const prepLabel = getPrepositionLabel(data.prep, data.cidade);
+const estadoLabel = getEstadoLabel(data.estado);
+const estadoNome = getEstadoNome(data.estado);
+const estadoGenitivo = getEstadoGenitivo(data.estado);
+const localLabel = data.cidade === estadoNome ? `${prepLabel} (${data.estado})` : `${prepLabel}, ${estadoLabel}`;
+
+const atualizadoEm = new Date();
+const atualizadoLabel = atualizadoEm.toLocaleDateString('pt-BR', {
+  day: 'numeric',
+  month: 'long',
+  year: 'numeric',
+});
+const atualizadoISO = atualizadoEm.toISOString().split('T')[0];
+---
+
+<div class="border-b border-stone-200 bg-white">
+  <div class="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
+    <nav class="mb-4 text-sm text-muted">
+      <a href="/" class="hover:text-brand-700">Início</a>
+      <span class="mx-2">/</span>
+      <a href="/construtoras/" class="hover:text-brand-700">Construtoras</a>
+      <span class="mx-2">/</span>
+      <span class="text-stone-700">{data.cidade}</span>
+    </nav>
+
+    <h1 class="font-display text-3xl font-bold text-stone-900 sm:text-4xl">
+      Construtoras e incorporadoras {prepLabel}
+    </h1>
+    <p class="mt-2 text-muted">
+      {data.total.toLocaleString('pt-BR')} {data.total === 1 ? 'empresa ativa' : 'empresas ativas'} · {data.estado}
+      {page > 1 && ` · Página ${page} de ${data.totalPages}`}
+    </p>
+  </div>
+</div>
+
+<div class="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
+  <div class="rounded-2xl border border-stone-200 bg-white p-6 sm:p-8">
+    <p class="leading-relaxed text-stone-600">
+      Encontre construtoras e incorporadoras {localLabel}. Esta página reúne {data.total.toLocaleString('pt-BR')}{' '}
+      {data.total === 1 ? 'empresa ativa' : 'empresas ativas'} nos CNAEs de construção de edifícios e incorporação
+      imobiliária, com CNPJ, endereço e telefone, e também dá acesso
+      {' '}<a href={`/imobiliarias-${data.prep}-${data.cidadeSlug}/`} class="font-medium text-brand-700 hover:underline">às
+      imobiliárias da cidade</a>, ao <a href="/corretores/" class="font-medium text-brand-700 hover:underline">diretório de
+      corretores</a> e aos <a href="/anuncie/" class="font-medium text-brand-700 hover:underline">planos para anunciar</a>.
+    </p>
+    <p class="mt-4 text-sm text-muted">
+      Fonte: cadastro público de CNPJ da Receita Federal. Atualizado em <time datetime={atualizadoISO}>{atualizadoLabel}</time>.
+    </p>
+  </div>
+
+  <div class="mt-8 grid gap-4">
+    {empresas.map((empresa) => (
+      <CardImobiliariaCadastro imobiliaria={empresa} />
+    ))}
+  </div>
+
+  <Pagination
+    basePath={`/${data.slug}`}
+    currentPage={page}
+    totalPages={data.totalPages}
+  />
+
+  {page === 1 && <ConstrutorasConteudo data={data} />}
+</div>

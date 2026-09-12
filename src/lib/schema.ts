@@ -3,6 +3,8 @@ import type { CidadeData, ImobiliariaCadastro } from './cidades';
 import { ESTADOS, getEstadoNome, getPrepositionLabel, slugifyNome } from './cidades';
 import municipios from '../data/municipios-ibge.json';
 import { cidadeFaq } from './cidade-faq';
+import { construtoraFaq } from './construtora-faq';
+import type { ConstrutoraCadastro, ConstrutoraCidadeData } from './construtoras';
 
 export const SITE_URL = 'https://guiamorada.com';
 export const ORG_ID = `${SITE_URL}/#organization`;
@@ -354,5 +356,87 @@ export function cidadeListingSchema(
     },
     // O bloco de conteúdo (e o FAQ) só existe na página 1 da cidade.
     ...(page === 1 ? [faqSchema(cidadeFaq(data.cidade))] : []),
+  ];
+}
+
+/** Construtora ou incorporadora vinda do cadastro público de CNPJ. */
+export function construtoraCadastroSchema(
+  empresa: ConstrutoraCadastro,
+  cidade: ConstrutoraCidadeData,
+  position: number,
+) {
+  const endereco = empresa.endereco;
+  return {
+    '@type': 'ListItem',
+    position,
+    item: {
+      // 4110-7/00 é incorporação; 4120-4/00 é execução de obra.
+      '@type': empresa.cnae === '4120400' ? 'GeneralContractor' : 'HomeAndConstructionBusiness',
+      name: empresa.nome,
+      ...(empresa.razaoSocial && empresa.razaoSocial !== empresa.nome
+        ? { legalName: empresa.razaoSocial }
+        : {}),
+      ...(empresa.telefone ? { telephone: empresa.telefone } : {}),
+      ...(empresa.areaAtuacao ? { description: empresa.areaAtuacao } : {}),
+      ...(empresa.dataAbertura
+        ? { foundingDate: empresa.dataAbertura.split('/').reverse().join('-') }
+        : {}),
+      identifier: {
+        '@type': 'PropertyValue',
+        propertyID: 'CNPJ',
+        name: 'Cadastro Nacional da Pessoa Jurídica',
+        value: empresa.cnpj,
+      },
+      address: {
+        '@type': 'PostalAddress',
+        ...(endereco.completo ? { streetAddress: endereco.completo } : {}),
+        addressLocality: endereco.cidade || cidade.cidade,
+        addressRegion: endereco.estado || cidade.estado,
+        addressCountry: 'BR',
+        ...(endereco.cep ? { postalCode: endereco.cep } : {}),
+      },
+      areaServed: cidadeRef(cidade.cidade, cidade.estado),
+    },
+  };
+}
+
+/** Página de listagem de construtoras de uma cidade (inclusive páginas 2+). */
+export function construtoraListingSchema(
+  data: ConstrutoraCidadeData,
+  page: number,
+  empresasNaPagina: ConstrutoraCadastro[],
+) {
+  const path = page === 1 ? `/${data.slug}/` : `/${data.slug}/${page}/`;
+  const prepLabel = getPrepositionLabel(data.prep, data.cidade);
+  const nome = `Construtoras e incorporadoras ${prepLabel}${page > 1 ? ` — página ${page}` : ''}`;
+  const descricao = `Lista de ${data.total.toLocaleString('pt-BR')} construtoras e incorporadoras ativas ${prepLabel} (${data.estado}).`;
+  const inicio = (page - 1) * empresasNaPagina.length;
+
+  return [
+    {
+      ...webPageSchema({
+        type: 'CollectionPage',
+        path,
+        name: nome,
+        description: descricao,
+        about: cidadeSchema(data.cidade, data.estado),
+      }),
+      dateModified: new Date().toISOString().split('T')[0],
+    },
+    breadcrumbSchema([
+      { name: 'Início', path: '/' },
+      { name: 'Construtoras', path: '/construtoras/' },
+      { name: data.cidade, path: `/${data.slug}/` },
+      ...(page > 1 ? [{ name: `Página ${page}`, path }] : []),
+    ]),
+    {
+      '@type': 'ItemList',
+      name: nome,
+      numberOfItems: data.total,
+      itemListElement: empresasNaPagina.map((empresa, i) =>
+        construtoraCadastroSchema(empresa, data, inicio + i + 1),
+      ),
+    },
+    ...(page === 1 ? [faqSchema(construtoraFaq(data.cidade))] : []),
   ];
 }

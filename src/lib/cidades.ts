@@ -14,6 +14,8 @@ export interface ImobiliariaCadastro {
     completo: string;
   };
   telefone: string;
+  /** Presente nos cadastros vindos do CNPJ (construtoras e incorporadoras). */
+  cnpj?: string;
   segmento: string;
   areaAtuacao: string;
   dataAbertura: string;
@@ -53,8 +55,16 @@ export function paginateImobiliarias<T>(items: T[], page: number, perPage: numbe
   return items.slice(start, start + perPage);
 }
 
+/** Celular brasileiro: 11 dígitos com DDD e o nono dígito começando em 9. */
+export function isCelular(telefone: string): boolean {
+  const digits = telefone.replace(/\D/g, '').replace(/^55/, '');
+  return digits.length === 11 && digits[2] === '9';
+}
+
 export function getWhatsAppLink(telefone: string, nome: string): string | null {
   const digits = telefone.replace(/\D/g, '');
+  // Fixo não tem WhatsApp; oferecer o botão numa linha fixa só gera frustração.
+  if (!isCelular(telefone)) return null;
   if (digits.length < 10) return null;
   const number = digits.startsWith('55') ? digits : `55${digits}`;
   const msg = encodeURIComponent(`Olá! Vi a ${nome} no Guia Morada e gostaria de mais informações.`);

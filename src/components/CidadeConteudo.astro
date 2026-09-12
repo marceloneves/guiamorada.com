@@ -8,7 +8,7 @@ import {
   getRegiao,
 } from '../lib/cidades';
 import { loadCidadesIndex } from '../lib/load-cidade';
-import { getCidadeStats, listar, porcentagem } from '../lib/cidade-stats';
+import { getCidadeStats, listar, porcentagem, descreverPorte } from '../lib/cidade-stats';
 import { cidadeFaq } from '../lib/cidade-faq';
 
 interface Props {
@@ -57,16 +57,16 @@ const frases1 = [
 ];
 if (stats.porteDominante) {
   frases1.push(
-    `A maior parte é ${stats.porteDominante.nome.toLowerCase()} (${porcentagem(
+    `A maior parte é ${descreverPorte(stats.porteDominante.nome)} (${porcentagem(
       stats.porteDominante.total,
       stats.total,
-    )}%) — na prática, equipes enxutas em que você costuma falar direto com o responsável.`,
+    )}%).`,
   );
 }
 if (stats.anoMaisAntiga) {
   frases1.push(
     stats.abertasUltimos5Anos > 0
-      ? `A mais antiga da lista está aberta desde ${stats.anoMaisAntiga} e ${stats.abertasUltimos5Anos} ${
+      ? `A mais antiga da lista está aberta desde ${stats.anoMaisAntiga} e ${stats.abertasUltimos5Anos.toLocaleString('pt-BR')} ${
           stats.abertasUltimos5Anos === 1 ? 'foi aberta' : 'foram abertas'
         } nos últimos cinco anos.`
       : `A mais antiga da lista está aberta desde ${stats.anoMaisAntiga}.`,

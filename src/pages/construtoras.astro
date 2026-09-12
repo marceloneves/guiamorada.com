@@ -1,0 +1,68 @@
+---
+import Layout from '../layouts/Layout.astro';
+import { loadConstrutorasIndex } from '../lib/load-construtoras';
+import { getPrepositionLabel, getEstadoNome } from '../lib/cidades';
+import { webPageSchema, breadcrumbSchema, itemListSchema } from '../lib/schema';
+
+const cidades = loadConstrutorasIndex();
+const total = cidades.reduce((s, c) => s + c.total, 0);
+
+const title = 'Construtoras e incorporadoras';
+const description =
+  'Construtoras e incorporadoras ativas por cidade, a partir do cadastro público de CNPJ da Receita Federal.';
+
+const schema = [
+  webPageSchema({ type: 'CollectionPage', path: '/construtoras/', name: title, description }),
+  breadcrumbSchema([
+    { name: 'Início', path: '/' },
+    { name: 'Construtoras', path: '/construtoras/' },
+  ]),
+  itemListSchema(
+    cidades.map((c) => ({
+      name: `Construtoras ${getPrepositionLabel(c.prep, c.cidade)}`,
+      path: `/${c.slug}/`,
+    })),
+    'Cidades com construtoras cadastradas',
+  ),
+];
+---
+
+<Layout title={title} description={description} schema={schema}>
+  <div class="border-b border-stone-200 bg-white">
+    <div class="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
+      <h1 class="font-display text-3xl font-bold text-stone-900 sm:text-4xl">Construtoras e incorporadoras</h1>
+      <p class="mt-2 text-muted">
+        {total.toLocaleString('pt-BR')} {total === 1 ? 'empresa ativa' : 'empresas ativas'} em{' '}
+        {cidades.length.toLocaleString('pt-BR')} {cidades.length === 1 ? 'cidade' : 'cidades'}
+      </p>
+      <p class="mt-4 max-w-3xl leading-relaxed text-muted">
+        As empresas vêm do cadastro público de CNPJ da Receita Federal, nos CNAEs 4110-7/00 (incorporação de
+        empreendimentos imobiliários) e 4120-4/00 (construção de edifícios), filtradas por situação cadastral ativa.
+        Estar na lista não é indicação nossa nem garantia de obra entregue.
+      </p>
+    </div>
+  </div>
+
+  <div class="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
+    {cidades.length > 0 ? (
+      <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        {cidades.map((cidade) => (
+          <a
+            href={`/${cidade.slug}/`}
+            class="group rounded-xl border border-stone-200 bg-white px-4 py-3.5 transition hover:border-brand-300 hover:shadow-md"
+          >
+            <span class="block text-base font-medium text-stone-900 group-hover:text-brand-700">
+              Construtoras {getPrepositionLabel(cidade.prep, cidade.cidade)}
+            </span>
+            <span class="mt-0.5 block text-sm text-muted">
+              {getEstadoNome(cidade.estado)} · {cidade.total.toLocaleString('pt-BR')}{' '}
+              {cidade.total === 1 ? 'empresa' : 'empresas'}
+            </span>
+          </a>
+        ))}
+      </div>
+    ) : (
+      <p class="py-16 text-center text-muted">Nenhuma cidade cadastrada ainda.</p>
+    )}
+  </div>
+</Layout>

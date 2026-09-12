@@ -11,6 +11,7 @@ Total: 46.315 imobiliárias em 2.462 cidades.
 - [Página inicial](https://guiamorada.com/)
 - [Imobiliárias por cidade](https://guiamorada.com/imobiliarias/cidades/)
 - [Imobiliárias](https://guiamorada.com/imobiliarias/)
+- [Construtoras e incorporadoras](https://guiamorada.com/construtoras/)
 - [Corretores](https://guiamorada.com/corretores/)
 - [Anuncie aqui — planos e preços](https://guiamorada.com/anuncie/)
 - [Sobre](https://guiamorada.com/sobre/)

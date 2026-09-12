@@ -1,0 +1,148 @@
+---
+import type { ConstrutoraCidadeData } from '../lib/construtoras';
+import {
+  getPrepositionLabel,
+  getEstadoLabel,
+  getEstadoGenitivo,
+  getRegiao,
+} from '../lib/cidades';
+import { listar, porcentagem, descreverPorte } from '../lib/cidade-stats';
+import { construtoraFaq } from '../lib/construtora-faq';
+
+interface Props {
+  data: ConstrutoraCidadeData;
+}
+
+const { data } = Astro.props;
+
+const prepLabel = getPrepositionLabel(data.prep, data.cidade);
+const estadoLabel = getEstadoLabel(data.estado);
+const estadoGenitivo = getEstadoGenitivo(data.estado);
+const regiao = getRegiao(data.estado);
+const faq = construtoraFaq(data.cidade);
+
+function contar(pick: (e: (typeof data.empresas)[number]) => string) {
+  const mapa = new Map<string, number>();
+  for (const empresa of data.empresas) {
+    const chave = pick(empresa).trim();
+    if (!chave) continue;
+    mapa.set(chave, (mapa.get(chave) ?? 0) + 1);
+  }
+  return [...mapa.entries()]
+    .map(([nome, total]) => ({ nome, total }))
+    .sort((a, b) => b.total - a.total || a.nome.localeCompare(b.nome, 'pt-BR'));
+}
+
+const bairros = contar((e) => e.endereco.bairro);
+const portes = contar((e) => e.porte);
+const incorporadoras = data.empresas.filter((e) => e.cnae === '4110700').length;
+const construtoras = data.empresas.filter((e) => e.cnae === '4120400').length;
+const comTelefone = data.empresas.filter((e) => e.telefone).length;
+
+const anos = data.empresas
+  .map((e) => Number(e.dataAbertura.split('/')[2]))
+  .filter((ano) => Number.isFinite(ano) && ano > 1800);
+const anoMaisAntiga = anos.length ? Math.min(...anos) : undefined;
+const anoAtual = new Date().getFullYear();
+const abertasUltimos5Anos = anos.filter((ano) => ano >= anoAtual - 5).length;
+
+const frases1 = [
+  `${data.cidade} fica ${estadoLabel}, na Região ${regiao} do país, e reúne ${data.total.toLocaleString('pt-BR')} ${
+    data.total === 1 ? 'empresa ativa' : 'empresas ativas'
+  } de construção de edifícios e incorporação imobiliária${
+    bairros.length > 1 ? `, espalhadas por ${bairros.length} bairros` : ''
+  }.`,
+];
+if (incorporadoras && construtoras) {
+  frases1.push(
+    `São ${incorporadoras.toLocaleString('pt-BR')} registradas como incorporadoras (CNAE 4110-7/00) e ${construtoras.toLocaleString(
+      'pt-BR',
+    )} como construtoras de edifícios (CNAE 4120-4/00) — muitas atuam nos dois papéis, mas a atividade principal declarada é essa.`,
+  );
+}
+if (portes[0]) {
+  frases1.push(
+    `A maior parte é ${descreverPorte(portes[0].nome)} (${porcentagem(portes[0].total, data.total)}%).`,
+  );
+}
+if (anoMaisAntiga) {
+  frases1.push(
+    abertasUltimos5Anos > 0
+      ? `A mais antiga da lista está aberta desde ${anoMaisAntiga} e ${abertasUltimos5Anos.toLocaleString('pt-BR')} ${
+          abertasUltimos5Anos === 1 ? 'foi aberta' : 'foram abertas'
+        } nos últimos cinco anos.`
+      : `A mais antiga da lista está aberta desde ${anoMaisAntiga}.`,
+  );
+}
+const paragrafo1 = frases1.join(' ');
+
+const paragrafo2 = bairros.length
+  ? `Os endereços se concentram em ${listar(
+      bairros.slice(0, 3).map((b) => `${b.nome} (${b.total})`),
+    )}. ${comTelefone.toLocaleString('pt-BR')} ${
+      comTelefone === 1 ? 'registro traz' : 'registros trazem'
+    } telefone de contato. A lista sai do cadastro público de CNPJ da Receita Federal e mostra apenas empresas com situação cadastral ativa — estar na lista não é indicação nossa nem garantia de obra entregue.`
+  : '';
+
+const verificar = [
+  'Confirme o CNPJ na consulta pública da Receita Federal: situação cadastral ativa, data de abertura e quadro societário.',
+  'Peça o registro do memorial de incorporação no Cartório de Registro de Imóveis (o "R-" da incorporação) antes de assinar qualquer compra na planta.',
+  'Tire a matrícula atualizada do terreno e veja ônus, penhoras e hipotecas.',
+  'Pergunte se o empreendimento tem patrimônio de afetação — isso separa a obra do restante do patrimônio da empresa.',
+  'Verifique o responsável técnico no CREA ou no CAU e se a ART/RRT da obra está emitida.',
+  'Visite entregas anteriores da empresa na cidade e converse com moradores sobre acabamento, prazo e assistência técnica.',
+  'Leia a cláusula de prazo: o atraso tolerado por lei é de até 180 dias, e precisa estar escrito no contrato.',
+  'Procure o nome da empresa nos tribunais de justiça e nos órgãos de defesa do consumidor.',
+];
+---
+
+<section class="mt-14 border-t border-stone-200 pt-12">
+  <h2 class="font-display text-2xl font-bold text-stone-900 sm:text-3xl">
+    Construtoras e incorporadoras {prepLabel} ({data.estado})
+  </h2>
+
+  <div class="mt-5 space-y-4 leading-relaxed text-stone-600">
+    <p>{paragrafo1}</p>
+    {paragrafo2 && <p>{paragrafo2}</p>}
+  </div>
+
+  <h2 class="font-display mt-10 text-xl font-semibold text-stone-900">
+    O que verificar antes de comprar na planta {prepLabel}
+  </h2>
+  <ul class="mt-4 space-y-2.5 text-stone-600">
+    {verificar.map((item) => (
+      <li class="flex items-start gap-2.5 leading-relaxed">
+        <svg class="mt-1.5 h-3.5 w-3.5 shrink-0 text-brand-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7" />
+        </svg>
+        <span>{item}</span>
+      </li>
+    ))}
+  </ul>
+
+  <h2 class="font-display mt-10 text-xl font-semibold text-stone-900">
+    Perguntas frequentes sobre construtoras {prepLabel}
+  </h2>
+  <div class="mt-4 divide-y divide-stone-200 border-y border-stone-200">
+    {faq.map((item) => (
+      <details class="group py-4">
+        <summary class="flex cursor-pointer list-none items-center justify-between gap-3 font-medium text-stone-800">
+          {item.p}
+          <svg class="h-4 w-4 shrink-0 text-stone-400 transition group-open:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+          </svg>
+        </summary>
+        <p class="mt-3 leading-relaxed text-stone-600">{item.r}</p>
+      </details>
+    ))}
+  </div>
+
+  <div class="mt-8 flex flex-wrap gap-4 text-sm">
+    <a href={`/imobiliarias-${data.prep}-${data.cidadeSlug}/`} class="font-medium text-brand-700 hover:underline">
+      Ver imobiliárias {prepLabel}
+    </a>
+    <a href={`/imobiliarias/cidades/#uf-${data.estado.toLowerCase()}`} class="font-medium text-stone-600 hover:text-brand-700 hover:underline">
+      Cidades {estadoGenitivo}
+    </a>
+  </div>
+</section>

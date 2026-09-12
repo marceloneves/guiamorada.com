@@ -1,36 +1,67 @@
 ---
 import Layout from '../layouts/Layout.astro';
 import ImobiliariasCidadeContent from '../components/ImobiliariasCidadeContent.astro';
+import ConstrutorasCidadeContent from '../components/ConstrutorasCidadeContent.astro';
 import { loadCidadesIndex, loadCidadeData } from '../lib/load-cidade';
+import { loadConstrutorasIndex, loadConstrutoraCidade } from '../lib/load-construtoras';
 import { getPrepositionLabel, paginateImobiliarias, IMOBILIARIAS_POR_PAGINA } from '../lib/cidades';
-import { cidadeListingSchema } from '../lib/schema';
+import { CONSTRUTORAS_POR_PAGINA } from '../lib/construtoras';
+import { cidadeListingSchema, construtoraListingSchema } from '../lib/schema';
 
 export function getStaticPaths() {
-  const index = loadCidadesIndex();
-  return index.map((city) => ({
+  const imobiliarias = loadCidadesIndex().map((city) => ({
     params: { cityListing: city.slug },
-    props: { slug: city.slug, page: 1 },
+    props: { tipo: 'imobiliarias', slug: city.slug, page: 1 },
   }));
+
+  const construtoras = loadConstrutorasIndex().map((city) => ({
+    params: { cityListing: city.slug },
+    props: { tipo: 'construtoras', slug: city.slug, page: 1 },
+  }));
+
+  return [...imobiliarias, ...construtoras];
 }
 
 interface Props {
+  tipo: 'imobiliarias' | 'construtoras';
   slug: string;
   page: number;
 }
 
-const { slug, page } = Astro.props;
-const data = loadCidadeData(slug);
-const prepLabel = getPrepositionLabel(data.prep, data.cidade);
-const title = `Imobiliárias ${prepLabel}`;
-const description = `Lista de ${data.total.toLocaleString('pt-BR')} imobiliárias ${prepLabel} (${data.estado}). Encontre telefone e endereço no Guia Morada.`;
+const { tipo, slug, page } = Astro.props;
+const ehConstrutora = tipo === 'construtoras';
 
-const schema = cidadeListingSchema(
-  data,
-  page,
-  paginateImobiliarias(data.imobiliarias, page, IMOBILIARIAS_POR_PAGINA),
-);
+const construtoras = ehConstrutora ? loadConstrutoraCidade(slug) : null;
+const imobiliarias = ehConstrutora ? null : loadCidadeData(slug);
+const data = construtoras ?? imobiliarias!;
+
+const prepLabel = getPrepositionLabel(data.prep, data.cidade);
+
+const title = ehConstrutora
+  ? `Construtoras e incorporadoras ${prepLabel}`
+  : `Imobiliárias ${prepLabel}`;
+
+const description = ehConstrutora
+  ? `Lista de ${data.total.toLocaleString('pt-BR')} construtoras e incorporadoras ativas ${prepLabel} (${data.estado}), com CNPJ, endereço e telefone.`
+  : `Lista de ${data.total.toLocaleString('pt-BR')} imobiliárias ${prepLabel} (${data.estado}). Encontre telefone e endereço no Guia Morada.`;
+
+const schema = construtoras
+  ? construtoraListingSchema(
+      construtoras,
+      page,
+      paginateImobiliarias(construtoras.empresas, page, CONSTRUTORAS_POR_PAGINA),
+    )
+  : cidadeListingSchema(
+      imobiliarias!,
+      page,
+      paginateImobiliarias(imobiliarias!.imobiliarias, page, IMOBILIARIAS_POR_PAGINA),
+    );
 ---
 
 <Layout title={title} description={description} schema={schema}>
-  <ImobiliariasCidadeContent data={data} page={page} />
+  {construtoras ? (
+    <ConstrutorasCidadeContent data={construtoras} page={page} />
+  ) : (
+    <ImobiliariasCidadeContent data={imobiliarias!} page={page} />
+  )}
 </Layout>
