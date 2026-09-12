@@ -11,15 +11,17 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.join(__dirname, '..');
 const SITE = 'https://guiamorada.com';
 const INDEX_FILE = path.join(ROOT, 'src/data/generated/cidades-index.json');
+const CONSTRUTORAS_INDEX = path.join(ROOT, 'src/data/generated/construtoras-index.json');
 const PUBLIC_DIR = path.join(ROOT, 'public');
 const PAGES_DIR = path.join(ROOT, 'src/pages');
-/** Máximo recomendado para fetch confiável pelo Google Search Console */
-const URLS_PER_SITEMAP = 1000;
+/** Limite do protocolo de sitemaps: 50.000 URLs (e 50 MB) por arquivo. */
+const URLS_PER_SITEMAP = 50000;
 
 /** Sitemaps separados por tipo de conteúdo. */
 const GRUPOS = [
   { id: 'paginas', label: 'páginas institucionais' },
   { id: 'imobiliarias', label: 'imobiliárias' },
+  { id: 'construtoras', label: 'construtoras e incorporadoras' },
   { id: 'corretores', label: 'corretores' },
 ];
 
@@ -49,7 +51,7 @@ function collectUrls() {
   const add = (grupo, pathname) =>
     grupos[grupo].add(JSON.stringify({ loc: toUrl(pathname), lastmod }));
 
-  ['/', '/anuncie', '/sobre'].forEach((p) => add('paginas', p));
+  ['/', '/anuncie', '/sobre', '/contato'].forEach((p) => add('paginas', p));
 
   // Índices de listagem entram junto do conteúdo que apresentam.
   ['/imobiliarias', '/imobiliarias/cidades'].forEach((p) => add('imobiliarias', p));
@@ -68,6 +70,17 @@ function collectUrls() {
       add('imobiliarias', `/${city.slug}`);
       for (let page = 2; page <= city.totalPages; page++) {
         add('imobiliarias', `/${city.slug}/${page}`);
+      }
+    }
+  }
+
+  if (fs.existsSync(CONSTRUTORAS_INDEX)) {
+    const cidades = JSON.parse(fs.readFileSync(CONSTRUTORAS_INDEX, 'utf-8'));
+    add('construtoras', '/construtoras');
+    for (const cidade of cidades) {
+      add('construtoras', `/${cidade.slug}`);
+      for (let page = 2; page <= cidade.totalPages; page++) {
+        add('construtoras', `/${cidade.slug}/${page}`);
       }
     }
   }
@@ -146,15 +159,16 @@ function main() {
 
   for (const grupo of GRUPOS) {
     const urls = porGrupo[grupo.id] ?? [];
+    // Grupo sem conteúdo não vira arquivo: urlset vazio é inválido no protocolo.
+    if (urls.length === 0) continue;
     totalUrls += urls.length;
 
     const chunks = [];
     for (let i = 0; i < urls.length; i += URLS_PER_SITEMAP) {
       chunks.push(urls.slice(i, i + URLS_PER_SITEMAP));
     }
-    if (chunks.length === 0) chunks.push([]);
 
-    // Um grupo pequeno vira um arquivo só; acima de 1.000 URLs ele é numerado.
+    // Um grupo cabe em um arquivo só; passando do limite do protocolo, ele é numerado.
     chunks.forEach((chunk, index) => {
       const filename =
         chunks.length === 1 ? `sitemap-${grupo.id}.xml` : `sitemap-${grupo.id}-${index + 1}.xml`;

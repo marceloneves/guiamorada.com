@@ -46,6 +46,7 @@ function main() {
     `- [Corretores](${SITE}/corretores/)`,
     `- [Anuncie aqui — planos e preços](${SITE}/anuncie/)`,
     `- [Sobre](${SITE}/sobre/)`,
+    `- [Contato](${SITE}/contato/)`,
     '',
     '## Principais cidades',
     '',
